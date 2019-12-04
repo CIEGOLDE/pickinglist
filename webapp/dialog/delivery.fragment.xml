@@ -1,0 +1,39 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:l="sap.ui.layout"
+	xmlns:u="sap.ui.unified" xmlns:f="sap.ui.layout.form" xmlns:core="sap.ui.core">
+	<Dialog id="DeliveryDialog" title="Delivery Document">
+		<content>
+			<!-- Functional Location Search Help -->
+			<Panel expandable="false" expanded="true">
+				<SearchField liveChange="onDeliveryF4Search" width="100%" id="DeliveryDocument"/>
+				<!--"ShippingPoint-ShippingPointStructure" />-->
+				<Table id="ZDELIVERY_TTable" items="{/deliveryF4Set}" growing="true" growingThreshold="100" mode='MultiSelect'>
+					<columns>
+						<!--<Column>-->
+						<!--	<Text text="Delivery Document" />-->
+						<!--</Column>-->
+						<Column minScreenWidth="Tablet">
+							<Text text="delivery document" />
+						</Column>
+					</columns>
+					<items>
+						<ColumnListItem>
+							<cells>
+								<Text text="{DeliveryDocument}" />
+								<!--<Text text="{ShippingPoint}" />-->
+								<!--<Text text="{ShippingPointStructure}" />-->
+							</cells>
+						</ColumnListItem>
+					</items>
+				</Table>
+			</Panel>
+		</content>
+		<buttons>
+			<!-- 确认按钮 -->
+			<Button type="Emphasized" text="Confirm"
+				press="onConfirmActiond" visible="true" />
+			<!-- 取消按钮 -->
+			<Button type="Emphasized" text="Cancel"
+				press="onCancelAction" />
+		</buttons>
+	</Dialog>
+</core:FragmentDefinition>

@@ -1,0 +1,84 @@
+{
+  "welcomeFile": "/webapp/index.html",
+  "routes": [
+    {
+      "path": "/resources",
+      "target": {
+        "type": "service",
+        "name": "sapui5",
+        "entryPath": "/resources"
+      },
+      "description": "SAPUI5 Resources"
+    },
+    {
+      "path": "/test-resources",
+      "target": {
+        "type": "service",
+        "name": "sapui5",
+        "entryPath": "/test-resources"
+      },
+      "description": "SAPUI5 Resources"
+    },
+    {
+      "path": "/webapp/resources",
+      "target": {
+        "type": "service",
+        "name": "sapui5",
+        "entryPath": "/resources"
+      },
+      "description": "SAPUI5 Resources"
+    },
+    {
+      "path": "/webapp/test-resources",
+      "target": {
+        "type": "service",
+        "name": "sapui5",
+        "entryPath": "/test-resources"
+      },
+      "description": "SAPUI5 Test Resources"
+    },
+    {
+      "path": "/destinations/S4HANACLOUD_BASIC",
+      "target": {
+        "type": "destination",
+        "name": "S4HANACLOUD_BASIC",
+        "entryPath": "/sap/opu/odata/sap"
+      },
+      "description": "CIE Cloud OData Service"
+    },
+    {
+      "path": "/destinations/ADS",
+      "target": {
+        "type": "destination",
+        "name": "ADS"
+      },
+      "description": "CIE Cloud OData Service"
+    },
+    {
+      "path": "/destinations/SCP_ADS",
+      "target": {
+        "type": "destination",
+        "name": "SCP_ADS"
+      },
+      "description": "CIE Cloud OData Service"
+    },
+    {
+      "path": "/destinations/ADS_CLONING",
+      "target": {
+        "type": "destination",
+        "name": "ADS_CLONING"
+      },
+      
+      "description": "CIE Cloud OData Service"
+    },
+    {
+      "path": "/ads.restapi",
+      "target": {
+        "type": "destination",
+        "name": "ADS_ADOBE" 
+      },
+      "description": "ADS_ADOBE"
+	}
+  ],
+  "sendWelcomeFileRedirect": true
+}

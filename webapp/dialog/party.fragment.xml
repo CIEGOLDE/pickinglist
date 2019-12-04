@@ -1,0 +1,39 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:l="sap.ui.layout"
+	xmlns:u="sap.ui.unified" xmlns:f="sap.ui.layout.form" xmlns:core="sap.ui.core">
+	<Dialog id="PartyDialog" title="Customer">
+		<content>
+			<!-- Functional Location Search Help -->
+			<Panel expandable="false" expanded="true">
+				<SearchField liveChange="onPartyF4Search" width="100%" id="Customer-CustomerName"/>
+				<!--"ShippingPoint-ShippingPointStructure" />-->
+				<Table id="ZPARTY_TTable" items="{/partyF4Set}" growing="true" growingThreshold="100" mode='MultiSelect'>
+					<columns>
+						<Column>
+							<Text text="Customer" />
+						</Column>
+						<Column minScreenWidth="Tablet">
+							<Text text="Name" />
+						</Column>
+					</columns>
+					<items>
+						<ColumnListItem>
+							<cells>
+								<!--<Text text="{DeliveryDocumnet}" />-->
+								<Text text="{Customer}" />
+								<Text text="{CustomerName}" />
+							</cells>
+						</ColumnListItem>
+					</items>
+				</Table>
+			</Panel>
+		</content>
+		<buttons>
+			<!-- 确认按钮 -->
+			<Button type="Emphasized" text="Confirm"
+				press="onConfirmActionp" visible="true" />
+			<!-- 取消按钮 -->
+			<Button type="Emphasized" text="Cancel"
+				press="onCancelAction" />
+		</buttons>
+	</Dialog>
+</core:FragmentDefinition>

@@ -1,0 +1,169 @@
+<mvc:View controllerName="cie.pickinglist.controller.report" xmlns:mvc="sap.ui.core.mvc" displayBlock="true" xmlns="sap.m"
+		  xmlns:f="sap.ui.layout.form" 	xmlns:t="sap.ui.table" xmlns:html="http://www.w3.org/1999/xhtml">
+		<App id="app">
+			<pages>
+				<Page id="page" title="{i18n>title}">
+					<content>
+						<HBox>
+							<HBox width="1%"></HBox>								
+							<HBox width="98%" class="hboxBackgroundColor hboxBackgroundPanel">
+							<Panel width="100%">
+								<VBox width="100%">
+								<HBox width="98%">
+										<VBox width="10%" justifyContent="Center">
+											<Text text="Shipping Point：" textAlign="End" width="100%" />
+										</VBox>
+										<VBox width="8%">
+											<MultiInput id="ShippingPoint" type="Text" placeholder="" 
+											            showSuggestion="true" 
+											            showValueHelp="true" 
+											            valueHelpRequest="openLocation">
+											</MultiInput>	
+										</VBox>
+										<VBox width="10%" justifyContent="Center">
+											<Text text="Ship-To Party：" textAlign="End" width="100%" />
+										</VBox>
+										<VBox width="12%">
+												<MultiInput id="Customer" type = "Text" placeholder = "" 
+														showSuggestion="true" 
+											            showValueHelp="true" 
+											            valueHelpRequest="openParty">
+												</MultiInput>
+										</VBox>
+										<VBox width="12%" justifyContent="Center">
+											<Text text="Outbound Delivery：" textAlign="End" width="100%" />
+										</VBox>
+										<VBox width="12%">
+												<MultiInput id="DeliveryDocument" type = "Text" placeholder = "" 
+														showSuggestion="true" 
+											            showValueHelp="true" 
+											            valueHelpRequest="openDelivery">
+												</MultiInput>
+										</VBox>
+										<!--<VBox width="12%" justifyContent="Center" >-->
+										<!--	<Text text="Planned GI Date：" textAlign="End" width="100%" />-->
+										<!--</VBox>-->
+										<!--<VBox width="17%">-->
+										<!--	<DateRangeSelection id="PlannedGoodsIssueDate" displayFormat="yyyy-MM-dd" placeholder=" "/>											-->
+										<!--</VBox>-->
+										<VBox width="1%" justifyContent="Center" />										
+										<HBox width="3%" justifyContent="End">
+											<Button  text="Go" press="onSearch" />
+										</HBox>
+									</HBox>
+								</VBox>
+							</Panel>
+						    </HBox>
+							<HBox width="1%"></HBox>							    
+					    </HBox>
+					    <HBox width="100%">
+						<HBox width="1%"></HBox>
+						<HBox width="98%" class="insertWidth">
+						<html:div style="display:inline-block;width:100%; ">
+							<html:div  style="width:100%; height:20px;" ></html:div>
+							<html:div  class="hboxBackgroundColor" style="width:100%;">
+								<html:div id="Table"   style="display:inline-block; width:100%; height:340px; border:0px red solid">
+										<t:Table rows="{/pickinglistSet}" id="table"	columnSelect=".onColumn" selectionMode="MultiToggle" 
+												visibleRowCount="10" showNoData="true" >
+					<!--<VBox class="tableBox">  -->
+					<!--	<t:Table id="table" rows="{/pickinglistSet}" -->
+					<!--	             columnSelect=".onColumn"-->
+					<!--		         selectionMode="MultiToggle" -->
+					<!--				 visibleRowCount="9"-->
+					<!--		         >-->
+							<t:toolbar>
+							<OverflowToolbar>
+								<content>
+									<Title id="title" text="picking list: Print" />
+									<ToolbarSpacer/>									
+									<!--<Button type="Transparent" icon="sap-icon://delete" text="Delete" press="onDelete"/>-->
+									<Button type="Transparent" icon="sap-icon://print" text="Print" press="onPrint"/>
+								</content>
+							</OverflowToolbar>
+							</t:toolbar>											
+										<t:columns>
+											<t:Column filterProperty="Outbound Delivery" hAlign="Left" width="8rem">
+												<Label text="Outbound Delivery" />
+												<t:template>
+													<Text text="{DeliveryDocument}" wrapping="false"/>
+												</t:template>
+											</t:Column>
+											<t:Column  width="10%" hAlign="Left">
+												<Label text="Shipping Point" />
+												<t:template>
+													<Text text="{ShippingPoint}" wrapping="false" />
+												</t:template>
+											</t:Column>
+											<t:Column width="10%">
+												<Label text="Sold To" />
+												<t:template>
+													<Text text="{SoldToParty}" wrapping="false" />
+												</t:template>
+											</t:Column>
+											<t:Column width="22%">
+												<Label text="Customer Name" />
+												<t:template>
+													<Text text="{customername}" wrapping="false" />
+												</t:template>
+											</t:Column>
+											<t:Column filterProperty="Ship-To Party" hAlign="Left" width="10%">
+												<Label text="Ship To" />
+												<t:template>
+													<Text text="{ShipToParty}" wrapping="false" />
+												</t:template>
+											</t:Column>
+											<t:Column width="13%">
+												<Label text="Street" />
+												<t:template>
+													<Text text="{Street}" wrapping="false" />
+												</t:template>
+											</t:Column>
+											<t:Column width="8%">
+												<Label text="City" />
+												<t:template>
+													<Text text="{City}" wrapping="false" />
+												</t:template>
+											</t:Column>
+											<t:Column width="8%">
+												<Label text="Postal Code" />
+												<t:template>
+													<Text text="{PostalCode}" wrapping="false" />
+												</t:template>
+											</t:Column>
+											<t:Column width="6%">
+												<Label text="Country" />
+												<t:template>
+													<Text text="{Country}" wrapping="false" />
+												</t:template>
+											</t:Column>
+											<t:Column width="23%">
+												<Label text="Planned Goods Movement Date" />
+												<t:template>
+													<Text text="{PlannedGoodsIssueDate}" wrapping="true" />
+												</t:template>
+											</t:Column>
+										</t:columns>
+											<t:noData>
+												<Text text="No data" class="uiTableNoData"/>
+										</t:noData>
+									</t:Table>
+									</html:div>
+								<!--<Title text="MTBF(min)" class="profix" />	-->
+								<!--<html:div style="display:inline-block; width:100%; height:15px; border:0px red solid;text-align:center">-->
+								<!--		<CheckBox text="MTBF" class="mbtfCheckBox" enabled="false" />-->
+								<!--		<CheckBox text="Target" class="targetCheckBox" enabled="false" />-->
+								<!--</html:div>											-->
+								<!--<html:div id="MTBFChart"  style="display:inline-block; width:100%; height:350px; border:0px red solid">-->
+								<!--</html:div>-->
+					    	</html:div>
+						</html:div>
+						</HBox>
+							<HBox width="1%"></HBox>
+					    </HBox>		
+					<!-- </t:Table>-->
+					<!--</VBox>	-->
+					</content>
+				</Page>
+			</pages>
+		</App>
+</mvc:View>
