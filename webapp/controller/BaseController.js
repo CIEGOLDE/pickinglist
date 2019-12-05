@@ -10,7 +10,7 @@ sap.ui.define(["sap/ui/core/mvc/Controller",
 	"use strict";
 
 	return Controller.extend("cie.pickinglist.controller.BaseController", {
-
+//
 		//---格式
 		formatter: formatter,
 
