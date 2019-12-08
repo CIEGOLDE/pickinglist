@@ -286,35 +286,8 @@ sap.ui.define(
 				if (PlannedGIDate != null) {
 					var DateArr = PlannedGIDate.split(" ");
 					var startDate = DateArr[0] + 'T00:00:00';
-					var endDate = DateArr[2] + 'T23:59:59';
-					// var filterParameter =
-						// "&$filter=(PlannedGoodsIssueDate ge datetime'" + startDate + "' and PlannedGoodsIssueDate le datetime'" + endDate + "')";
-					// sUrl = sUrl + filterParameter;
-		// 			new Filter({
-  //  filters: [
-  //    this.getInitialFilter(),
-  //    this.getSearchFilters(event.getParameter("query")),
-  //  ],
-  //  and: true,
-  //})
-//  allFilters = new Filter({
-//   filters: [
-//     new sap.ui.model.Filter("Name", sap.ui.model.FilterOperator.EQ, inptval),
-//     new sap.ui.model.Filter("ID", sap.ui.model.FilterOperator.EQ, inptval)
-//   ],
-//   and: false
-// });
-					// allFilters.push(new Filter('PlannedGoodsIssueDate', sap.ui.model.FilterOperator.GE, startDate));
-					// allFilters.push(new Filter('PlannedGoodsIssueDate', sap.ui.model.FilterOperator.LE, endDate));
-					// allFilters.push(
-					// var all = new Filter({
-					// 	filters:[
-					// 		new Filter('PlannedGoodsIssueDate', sap.ui.model.FilterOperator.GE, startDate),
-					// 		new Filter('PlannedGoodsIssueDate', sap.ui.model.FilterOperator.LE, endDate)
-					// 		],
-					// 		 and: false});
-					// 	// );
-					// allFilters.push(all);	
+					var endDate = DateArr[2] + 'T23:59:59';S             
+					allFilters.push(new Filter('PlannedGoodsIssueDate', sap.ui.model.FilterOperator.BT, startDate,endDate));
 				}
 
 				var mParameters = {
@@ -366,7 +339,7 @@ sap.ui.define(
 				var ItemTable = this.getView().byId("table");
 				var selectIndexArry = ItemTable.getSelectedIndices();
 				var selectItemArr = [];
-				if (selectIndexArry.length == 1) {
+				if (selectIndexArry.length !== 1) {
 					sap.m.MessageBox.warning("Please select one line", {
 				// if (selectIndexArry.length <= 0) {
 				// 	sap.m.MessageBox.warning("Please select at least one line", {
