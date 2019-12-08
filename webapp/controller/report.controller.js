@@ -9,8 +9,6 @@ sap.ui.define(
 		"cie/pickinglist/util/echarts",
 		"cie/pickinglist/pdf/build/pdf",
 		"sap/m/MessageToast"
-		// ],
-		// function (BaseController, JSONModel, Filter, FilterOperator, MessageToast, MessageBox, messages, designMode) {
 	],
 	function (BaseController, designMode, messages, JSONModel, Spreadsheet, Filter, Token, echartsjs, MessageToast) {
 		"use strict";
@@ -33,7 +31,7 @@ sap.ui.define(
 				oView.byId("Customer").addValidator(fValidator);
 				// oView.byId("ShipToParty").addValidator(fValidator);
 				oView.byId("DeliveryDocument").addValidator(fValidator);
-				// this.initDateRange();
+				this.initDateRange();
 				this.getInitData();
 			},
 			onAfterRendering: function () {
@@ -43,15 +41,15 @@ sap.ui.define(
 			},
 
 			// Init Date
-			// initDateRange: function () {
-			// 	var date = new Date();
-			// 	this.byId("PlannedGoodsIssueDate").setTo(date);
-			// 	var year = date.getFullYear();
-			// 	var nowMonth = date.getMonth() + 1;
-			// 	nowMonth = (nowMonth < 10 ? "0" + nowMonth : nowMonth);
-			// 	var dateStr = year.toString() + '-' + nowMonth.toString() + '-' + '01';
-			// 	this.byId("PlannedGoodsIssueDate").setFrom(new Date(dateStr));
-			// },
+			initDateRange: function () {
+				var date = new Date();
+				this.byId("PlannedGoodsIssueDate").setTo(date);
+				var year = date.getFullYear();
+				var nowMonth = date.getMonth() + 1;
+				nowMonth = (nowMonth < 10 ? "0" + nowMonth : nowMonth);
+				var dateStr = year.toString() + '-' + nowMonth.toString() + '-' + '01';
+				this.byId("PlannedGoodsIssueDate").setFrom(new Date(dateStr));
+			},
 
 			// Init Data
 			getInitData: function () {
@@ -260,21 +258,9 @@ sap.ui.define(
 				var ShippingPoint = that.byId("ShippingPoint").getTokens();
 				var ShipToParty = that.byId("Customer").getTokens();
 				var DeliveryDocument = that.byId("DeliveryDocument").getTokens();
-				// var PlannedGIDate = that.byId("PlannedGoodsIssueDate").getValue();
+				var PlannedGIDate = that.byId("PlannedGoodsIssueDate").getValue();
 				var allFilters = [];
 				var i, k;
-				// that._JSONModel.setProperty("/target",target);			
-				// that._JSONModel.setProperty("/productionTime",productionTime);
-				// if (ShippingPoint.length===0) {
-				// 	that.byId("table").setBusy(false);					
-				// 	MessageToast.show("Please input Shipping Point！");
-				// 	return;
-				// }	
-				// if(!productionTime){
-				// 	that.byId("table").setBusy(false);					
-				// 	MessageToast.show("Please input Production Time！");
-				// 	return;				
-				// }
 				if (ShippingPoint.length > 0) {
 					for (i = 0; i < ShippingPoint.length; i++) {
 						allFilters.push(new Filter('ShippingPoint', sap.ui.model.FilterOperator.EQ, ShippingPoint[i].mProperties.key));
@@ -290,15 +276,16 @@ sap.ui.define(
 						allFilters.push(new Filter('DeliveryDocument', sap.ui.model.FilterOperator.EQ, DeliveryDocuments[i].mProperties.key));
 					}
 				}
-				// if (PlannedGIDate != null) {
-				// 	var DateArr = PlannedGIDate.split(" ");
-				// 	var startDate = DateArr[0] + 'T00:00:00';
-				// 	var endDate = DateArr[2] + 'T23:59:59';
-				// 	var filterParameter =
-				// 		"&$filter=(PlannedGoodsIssueDate ge datetime'" + startDate + "' and PlannedGoodsIssueDate le datetime'" + endDate + "')";
-				// 	// sUrl = sUrl + filterParameter;
-				// 	// allFilters.push(new Filter('PlannedGoodsIssueDate', sap.ui.model.FilterOperator.EQ, startDate));
-				// }
+				if (PlannedGIDate != null) {
+					var DateArr = PlannedGIDate.split(" ");
+					var startDate = DateArr[0] + 'T00:00:00';
+					var endDate = DateArr[2] + 'T23:59:59';
+					var filterParameter =
+						// "&$filter=(PlannedGoodsIssueDate ge datetime'" + startDate + "' and PlannedGoodsIssueDate le datetime'" + endDate + "')";
+					// sUrl = sUrl + filterParameter;
+					allFilters.push(new Filter('PlannedGoodsIssueDate', sap.ui.model.FilterOperator.GE, startDate));
+					allFilters.push(new Filter('PlannedGoodsIssueDate', sap.ui.model.FilterOperator.LE, endDate));
+				}
 
 				var mParameters = {
 					filters: allFilters,
@@ -308,8 +295,16 @@ sap.ui.define(
 						if (Arry.length > 0) {
 							// this.processReaservationItem(Arry);
 							that._JSONModel.setProperty("/pickinglistSet", Arry);
-							that.getprocessname(Arry);
-							// that.getbatch(Arry.results.to_DeliveryDocumentItem);
+							
+							// that.getprocessname(ARRY,that).then(function(r)){
+							// 	that.getpinqty(that).then(function (result){
+							// 	};
+							// };
+							that.getdata(Arry);
+							// that.getprocessname(Arry);
+							
+							// that.getusedbatch(Arry);//.results.to_DeliveryDocumentItem);
+							// that.getallbatch(Arry);
 							// that.getPINQuantity();
 						} else {
 							messages.showText("No Data!");
@@ -323,12 +318,55 @@ sap.ui.define(
 				ODataModel.read(sUrl, mParameters);
 			},
 			// Item Data Process
-			getprocessname: function (Arry) {
-				var i, j;
+			getdata: function (Arry) {
+				// var pinqty = new promise(function (resolve, reject){
+				// 	// Get Box Label Data
+				// 	that.getBoxLabel(that).then(function (oData) {
+				// 		// Call ZPL Service
+				var that = this;
+				// that.getpinqty(that).then(function(){
+				// 	var pinqtylistSet = that._JSONModel.getProperty("/pinqtylistSet");
+				// 	if ( pinqtylistSet == " "){
+				// 		messages.showText("No Data!");
+				// 		}else{
+						that.getusedbatch(that).then(function(){
+							var usedbatchlistSet = that._JSONModel.getProperty("/usedbatchlistSet");
+							if ( usedbatchlistSet == " "){
+								messages.showText("No Data!");
+								}else{
+								that.getallbatch(that).then(function(){
+									var allbatchlistSet = that._JSONModel.getProperty("/allbatchlistSet");
+									if ( allbatchlistSet == " "){
+										messages.showText("No Data!");
+									}else{
+										getprocessname(Arry);
+									}
+									// }
+									}).catch(function(oError){
+					    				messages.showODataErrorText("Error");
+									});	
+								}
+						}).catch(function(oError){
+		    				messages.showODataErrorText("Error");
+						});	
+						// }
+				// 	}
+				// }).catch(function(oError){
+    // 				messages.showODataErrorText("Error");
+				// });
+				
+				
+			},
+			getprocessname:function(Arry){
+				var i, j, k;
 				var pickinglistSet = this._JSONModel.getProperty("/pickinglistSet");
+				var pinqtylistSet = this._JSONModel.getProperty("/pinqtylistSet");
+				
 				var partnerArry = [];
+				var item = [];
 				for (i = 0; i < Arry.length; i++) {
 					partnerArry = Arry[i].to_DeliveryDocumentPartner.results;
+					item = Arry[i].to_DeliveryDocumentItem.results;
 					for (j = 0; j < partnerArry.length; j++) {
 						if (Arry[i].SoldToParty == partnerArry[j].Customer) {
 							var soldset = {};
@@ -352,38 +390,112 @@ sap.ui.define(
 							// "/customername", partnerArry[j].to_Address.BusinessPartnerName1);
 						}
 					}
-				}
-			},
-			getbatch: function (Arry) {
-				var i, j;
-				var pickinglistSet = this._JSONModel.getProperty("/pickinglistSet");
-				var partnerArry = [];
-				for (i = 0; i < Arry.length; i++) {
-					partnerArry = Arry[i].to_DeliveryDocumentPartner.results;
-					for (j = 0; j < partnerArry.length; j++) {
-						if (Arry[i].SoldToParty == partnerArry[j].Customer) {
-							var soldset = {};
-							// pickinglistset.DeliveryDocument = Arry[i].DeliveryDocument;
-							soldset.customername = partnerArry[j].to_Address.BusinessPartnerName1;
-							// pickinglistSet.push(soldset);
-							this._JSONModel.setProperty("/pickinglistSet/" + i + "/customername", partnerArry[j].to_Address.BusinessPartnerName1);
-						}
-						if (Arry[i].ShipToParty == partnerArry[j].Customer) {
-							var shipset = {};
-							// pickinglistset.DeliveryDocument = Arry[i].DeliveryDocument;
-							shipset.Street = partnerArry[j].to_Address.StreetName;
-							shipset.City = partnerArry[j].to_Address.CityName;
-							shipset.PostalCode = partnerArry[j].to_Address.PostalCode;
-							shipset.Country = partnerArry[j].to_Address.Country;
-							// pickinglistSet.push(shipset);
-							this._JSONModel.setProperty("/pickinglistSet/" + i + "/Street", shipset.Street);
-							this._JSONModel.setProperty("/pickinglistSet/" + i + "/City", shipset.City);
-							this._JSONModel.setProperty("/pickinglistSet/" + i + "/PostalCode", shipset.PostalCode);
-							this._JSONModel.setProperty("/pickinglistSet/" + i + "/Country", shipset.Country);
-							// "/customername", partnerArry[j].to_Address.BusinessPartnerName1);
+					
+					for (k = 0; k< item.length; k++){
+						for(j=0;j<pinqtylistSet.length;j++){
+							if ( item[k].Material == pinqtylistSet.Material && item[k].Plant == pinqtylistSet.Plant ){
+								this._JSONModel.setProperty("/pickinglistSet/" + i + "to_DeliveryDocumentItem" + k+".results"+ "/Containers", pinqtylistSet.PalletQuantity);
+							}
 						}
 					}
-				}
+					
+				}	
+			},
+			getusedbatch: function (oController) {
+				var that = this;
+				that.byId("table").setBusy(true);
+				that._JSONModel.setProperty("/usedbatchlistSet", []);
+				var sUrl = "/A_OutbDeliveryItem";//?$filter=Batch ne ''";
+				var oDataUrl = "/destinations/S4HANACLOUD_BASIC/API_OUTBOUND_DELIVERY_SRV";
+				var ODataModel = new sap.ui.model.odata.ODataModel(oDataUrl);
+				var usedbatch = new Promise(function (resolve, reject){
+				var mParameters = {
+					// filters: allFilters,
+					success: function (oData) {
+						that.byId("table").setBusy(false);
+						var Arry = oData.results;
+						if (Arry.length > 0) {
+							// this.processReaservationItem(Arry);
+							that._JSONModel.setProperty("/usedbatchlistSet", Arry);
+							resolve(true);
+						// } else {
+						// 	messages.showText("No Data!");
+						}
+					}.bind(oController),
+					error: function (oError) {
+						// this.byId("table").setBusy(false);
+						// messages.showODataErrorText(oError);
+						that.clearCache();							
+						that.setBusy( false );
+						reject(oError);
+					}.bind(oController)
+				};
+				ODataModel.read(sUrl, mParameters);
+				});
+				return usedbatch;
+			},
+			getallbatch: function (oController) {
+				var that = this;
+				that.byId("table").setBusy(true);
+				that._JSONModel.setProperty("/allbatchlistSet", []);
+				// var sUrl = "/A_OutbDeliveryItem?$filter=Batch ne ''";
+				var oDataUrl = "/destinations/S4HANACLOUD_BASIC/YY1_CDS_BATCH_DATE";
+				var ODataModel = new sap.ui.model.odata.ODataModel(oDataUrl);
+				var allbatch = new Promise(function (resolve, reject){
+				var mParameters = {
+					// filters: allFilters,
+					success: function (oData) {
+						that.byId("table").setBusy(false);
+						var Arry = oData.results;
+						if (Arry.length > 0) {
+							// this.processReaservationItem(Arry);
+							that._JSONModel.setProperty("/allbatchlistSet", Arry);
+							reslove(true);
+						// } else {
+						// 	messages.showText("No Data!");
+						}
+					}.bind(that),
+					error: function (oError) {
+						// this.byId("table").setBusy(false);
+						// messages.showODataErrorText(oError);
+						that.clearCache();							
+						that.setBusy( false );
+						reject(oError);
+					}.bind(that)
+				};
+				ODataModel.read(mParameters);//(sUrl, mParameters);
+				});
+				return allbatch;
+			},
+
+			getpinqty: function (oController) {
+				var that = this;
+				// var that = oController;
+				that.byId("table").setBusy(true);
+				that._JSONModel.setProperty("/pinqtylistSet", []);
+				var sUrl = "/YY1_BO_PIN_QUAN";
+				var oDataUrl = "/destinations/S4HANACLOUD_BASIC/YY1_BO_PIN_QUAN_CDS";
+				var ODataModel = new sap.ui.model.odata.ODataModel(oDataUrl);
+				var pinqty = new Promise(function (resolve, reject){
+				var mParameters = {
+					// filters: allFilters,
+					success: function (oData) {
+						that.byId("table").setBusy(false);
+						var Arry = oData.results;
+						if (Arry.length > 0) {
+							that._JSONModel.setProperty("/pinqtylistSet", Arry);
+							resolve(true);
+						}
+					}.bind(oController),
+					error: function (oError) {
+						that.clearCache();							
+						that.setBusy( false );
+						reject(oError);
+					}.bind(oController)
+				};
+				ODataModel.read(sUrl, mParameters); //(mParameters);//
+				});
+				return pinqty;
 			},
 			// Print Form
 			onPrint: function (oEvent) {
