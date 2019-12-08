@@ -54,7 +54,7 @@ sap.ui.define(["sap/ui/core/mvc/Controller",
 			return oMetaData[sName];
 		},
 
-		//---获取OData服务EntityType
+		//---获取OData服务EntityType  
 		getEntityTypeByName: function (sODataName, sEntityTypeName) {
 			if (!this.getODataMetadata(sODataName)) {
 				return null;
@@ -216,10 +216,12 @@ sap.ui.define(["sap/ui/core/mvc/Controller",
 			var array = arr;
 			var len = array.length;
 			array.sort();
-
+			// array.sort(function(a,b){
+			// 	return a.DeliveryDocument < b.DeliveryDocument
+			// });
 			function loop(index) {
 				if (index >= 1) {
-					if (array[index] === array[index - 1]) {
+					if (array[index].DeliveryDocument === array[index - 1].DeliveryDocument) {
 						array.splice(index, 1);
 					}
 					loop(index - 1);
