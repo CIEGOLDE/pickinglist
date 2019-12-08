@@ -10,7 +10,7 @@ sap.ui.define(["sap/ui/core/mvc/Controller",
 	"use strict";
 
 	return Controller.extend("cie.pickinglist.controller.BaseController", {
-
+//
 		//---格式
 		formatter: formatter,
 
@@ -227,6 +227,14 @@ sap.ui.define(["sap/ui/core/mvc/Controller",
 			}
 			loop(len - 1);
 			return array;
+		},
+		removevalue:function(arr,str){
+			for(var i=0; i<arr.length; i++) {
+			    if(arr[i] == val) {
+			      arr.splice(i, 1);
+			      break;
+			    }
+			  }
 		},
 		clearObject: function (obj) {
 			var object = {};
