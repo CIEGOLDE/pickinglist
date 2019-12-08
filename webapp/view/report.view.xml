@@ -55,7 +55,7 @@
 							</Panel>
 						    </HBox>
 							<HBox width="1%"></HBox>							    
-					    </HBox>
+					    </HBox> 
 					    <HBox width="100%">
 						<HBox width="1%"></HBox>
 						<HBox width="98%" class="insertWidth">
@@ -97,7 +97,7 @@
 											<t:Column width="22%">
 												<Label text="Customer Name" />
 												<t:template>
-													<Text text="{customername}" wrapping="false" />
+													<Text text="{CustomerName}" wrapping="false" />
 												</t:template>
 											</t:Column>
 											<t:Column filterProperty="Ship-To Party" hAlign="Left" width="10%">
