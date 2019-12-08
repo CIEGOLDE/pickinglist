@@ -29,7 +29,7 @@ sap.ui.define(
 				};
 				oView.byId("ShippingPoint").addValidator(fValidator);
 				oView.byId("Customer").addValidator(fValidator);
-				// oView.byId("ShipToParty").addValidator(fValidator);
+				// oView.byId("ShipToParty").addValidator(fValidator);//
 				oView.byId("DeliveryDocument").addValidator(fValidator);
 				this.initDateRange();
 				this.getInitData();
@@ -57,8 +57,8 @@ sap.ui.define(
 					DeliveryDocument: "",
 					ShippingPoint: "",
 					SoldToParty: "",
-					customername: "",
-					shiptoparty: "",
+					CustomerName: "",
+					ShipToParty: "",
 					Street: "",
 					City: "",
 					PostalCode: "",
@@ -68,6 +68,7 @@ sap.ui.define(
 				var pickinglistSet = [];
 				this._JSONModel.setProperty("/pickinglist", pickinglist);
 				this._JSONModel.setProperty("/pickinglistSet", pickinglistSet);
+				this._lang = sap.ui.getCore().getConfiguration().getLanguage();
 			},
 
 			//search help
@@ -249,10 +250,14 @@ sap.ui.define(
 			//******************************************************************************//
 			onSearch: function () {
 				var that = this;
+				var language = this._lang;
+				language = language.substr(0,2);
 				that.byId("table").setBusy(true);
 				that._JSONModel.setProperty("/pickinglistSet", []);
-				var sUrl = "/A_OutbDeliveryHeader?$expand=to_DeliveryDocumentItem,to_DeliveryDocumentPartner/to_Address";
-				var oDataUrl = "/destinations/S4HANACLOUD_BASIC/API_OUTBOUND_DELIVERY_SRV";
+				// var sUrl = "/A_OutbDeliveryHeader?$expand=to_DeliveryDocumentItem,to_DeliveryDocumentPartner/to_Address";
+				// var oDataUrl = "/destinations/S4HANACLOUD_BASIC/API_OUTBOUND_DELIVERY_SRV";
+				var sUrl = "/YY1_PICKING_PIN";
+				var oDataUrl = "/destinations/S4HANACLOUD_BASIC/YY1_PICKING_PIN_CDS";
 				var ODataModel = new sap.ui.model.odata.ODataModel(oDataUrl);
 
 				var ShippingPoint = that.byId("ShippingPoint").getTokens();
@@ -261,6 +266,8 @@ sap.ui.define(
 				var PlannedGIDate = that.byId("PlannedGoodsIssueDate").getValue();
 				var allFilters = [];
 				var i, k;
+				allFilters.push(new Filter('ShipLang', sap.ui.model.FilterOperator.EQ, language));
+				allFilters.push(new Filter('SoldLang', sap.ui.model.FilterOperator.EQ, language));
 				if (ShippingPoint.length > 0) {
 					for (i = 0; i < ShippingPoint.length; i++) {
 						allFilters.push(new Filter('ShippingPoint', sap.ui.model.FilterOperator.EQ, ShippingPoint[i].mProperties.key));
@@ -280,11 +287,34 @@ sap.ui.define(
 					var DateArr = PlannedGIDate.split(" ");
 					var startDate = DateArr[0] + 'T00:00:00';
 					var endDate = DateArr[2] + 'T23:59:59';
-					var filterParameter =
+					// var filterParameter =
 						// "&$filter=(PlannedGoodsIssueDate ge datetime'" + startDate + "' and PlannedGoodsIssueDate le datetime'" + endDate + "')";
 					// sUrl = sUrl + filterParameter;
-					allFilters.push(new Filter('PlannedGoodsIssueDate', sap.ui.model.FilterOperator.GE, startDate));
-					allFilters.push(new Filter('PlannedGoodsIssueDate', sap.ui.model.FilterOperator.LE, endDate));
+		// 			new Filter({
+  //  filters: [
+  //    this.getInitialFilter(),
+  //    this.getSearchFilters(event.getParameter("query")),
+  //  ],
+  //  and: true,
+  //})
+//  allFilters = new Filter({
+//   filters: [
+//     new sap.ui.model.Filter("Name", sap.ui.model.FilterOperator.EQ, inptval),
+//     new sap.ui.model.Filter("ID", sap.ui.model.FilterOperator.EQ, inptval)
+//   ],
+//   and: false
+// });
+					// allFilters.push(new Filter('PlannedGoodsIssueDate', sap.ui.model.FilterOperator.GE, startDate));
+					// allFilters.push(new Filter('PlannedGoodsIssueDate', sap.ui.model.FilterOperator.LE, endDate));
+					// allFilters.push(
+					// var all = new Filter({
+					// 	filters:[
+					// 		new Filter('PlannedGoodsIssueDate', sap.ui.model.FilterOperator.GE, startDate),
+					// 		new Filter('PlannedGoodsIssueDate', sap.ui.model.FilterOperator.LE, endDate)
+					// 		],
+					// 		 and: false});
+					// 	// );
+					// allFilters.push(all);	
 				}
 
 				var mParameters = {
@@ -293,19 +323,8 @@ sap.ui.define(
 						that.byId("table").setBusy(false);
 						var Arry = oData.results;
 						if (Arry.length > 0) {
-							// this.processReaservationItem(Arry);
-							that._JSONModel.setProperty("/pickinglistSet", Arry);
-							
-							// that.getprocessname(ARRY,that).then(function(r)){
-							// 	that.getpinqty(that).then(function (result){
-							// 	};
-							// };
-							that.getdata(Arry);
-							// that.getprocessname(Arry);
-							
-							// that.getusedbatch(Arry);//.results.to_DeliveryDocumentItem);
-							// that.getallbatch(Arry);
-							// that.getPINQuantity();
+							var deliverydocument = oData.results;
+							that.getdisplay(Arry);
 						} else {
 							messages.showText("No Data!");
 						}
@@ -317,243 +336,46 @@ sap.ui.define(
 				};
 				ODataModel.read(sUrl, mParameters);
 			},
-			// Item Data Process
-			getdata: function (Arry) {
-				// var pinqty = new promise(function (resolve, reject){
-				// 	// Get Box Label Data
-				// 	that.getBoxLabel(that).then(function (oData) {
-				// 		// Call ZPL Service
-				var that = this;
-				// that.getpinqty(that).then(function(){
-				// 	var pinqtylistSet = that._JSONModel.getProperty("/pinqtylistSet");
-				// 	if ( pinqtylistSet == " "){
-				// 		messages.showText("No Data!");
-				// 		}else{
-						that.getusedbatch(that).then(function(){
-							var usedbatchlistSet = that._JSONModel.getProperty("/usedbatchlistSet");
-							if ( usedbatchlistSet == " "){
-								messages.showText("No Data!");
-								}else{
-								that.getallbatch(that).then(function(){
-									var allbatchlistSet = that._JSONModel.getProperty("/allbatchlistSet");
-									if ( allbatchlistSet == " "){
-										messages.showText("No Data!");
-									}else{
-										getprocessname(Arry);
-									}
-									// }
-									}).catch(function(oError){
-					    				messages.showODataErrorText("Error");
-									});	
-								}
-						}).catch(function(oError){
-		    				messages.showODataErrorText("Error");
-						});	
-						// }
-				// 	}
-				// }).catch(function(oError){
-    // 				messages.showODataErrorText("Error");
-				// });
-				
-				
-			},
-			getprocessname:function(Arry){
-				var i, j, k;
+			getdisplay:function (Arry){
+				var i;
+				var pickinglist = [];
 				var pickinglistSet = this._JSONModel.getProperty("/pickinglistSet");
-				var pinqtylistSet = this._JSONModel.getProperty("/pinqtylistSet");
-				
-				var partnerArry = [];
-				var item = [];
 				for (i = 0; i < Arry.length; i++) {
-					partnerArry = Arry[i].to_DeliveryDocumentPartner.results;
-					item = Arry[i].to_DeliveryDocumentItem.results;
-					for (j = 0; j < partnerArry.length; j++) {
-						if (Arry[i].SoldToParty == partnerArry[j].Customer) {
-							var soldset = {};
-							// pickinglistset.DeliveryDocument = Arry[i].DeliveryDocument;
-							soldset.customername = partnerArry[j].to_Address.BusinessPartnerName1;
-							//pickinglistSet.push(soldset);
-							this._JSONModel.setProperty("/pickinglistSet/" + i + "/customername", partnerArry[j].to_Address.BusinessPartnerName1);
-						}
-						if (Arry[i].ShipToParty == partnerArry[j].Customer) {
-							var shipset = {};
-							// pickinglistset.DeliveryDocument = Arry[i].DeliveryDocument;
-							shipset.Street = partnerArry[j].to_Address.StreetName;
-							shipset.City = partnerArry[j].to_Address.CityName;
-							shipset.PostalCode = partnerArry[j].to_Address.PostalCode;
-							shipset.Country = partnerArry[j].to_Address.Country;
-							// pickinglistSet.push(shipset);
-							this._JSONModel.setProperty("/pickinglistSet/" + i + "/Street", shipset.Street);
-							this._JSONModel.setProperty("/pickinglistSet/" + i + "/City", shipset.City);
-							this._JSONModel.setProperty("/pickinglistSet/" + i + "/PostalCode", shipset.PostalCode);
-							this._JSONModel.setProperty("/pickinglistSet/" + i + "/Country", shipset.Country);
-							// "/customername", partnerArry[j].to_Address.BusinessPartnerName1);
-						}
-					}
-					
-					for (k = 0; k< item.length; k++){
-						for(j=0;j<pinqtylistSet.length;j++){
-							if ( item[k].Material == pinqtylistSet.Material && item[k].Plant == pinqtylistSet.Plant ){
-								this._JSONModel.setProperty("/pickinglistSet/" + i + "to_DeliveryDocumentItem" + k+".results"+ "/Containers", pinqtylistSet.PalletQuantity);
-							}
-						}
-					}
-					
-				}	
-			},
-			getusedbatch: function (oController) {
-				var that = this;
-				that.byId("table").setBusy(true);
-				that._JSONModel.setProperty("/usedbatchlistSet", []);
-				var sUrl = "/A_OutbDeliveryItem";//?$filter=Batch ne ''";
-				var oDataUrl = "/destinations/S4HANACLOUD_BASIC/API_OUTBOUND_DELIVERY_SRV";
-				var ODataModel = new sap.ui.model.odata.ODataModel(oDataUrl);
-				var usedbatch = new Promise(function (resolve, reject){
-				var mParameters = {
-					// filters: allFilters,
-					success: function (oData) {
-						that.byId("table").setBusy(false);
-						var Arry = oData.results;
-						if (Arry.length > 0) {
-							// this.processReaservationItem(Arry);
-							that._JSONModel.setProperty("/usedbatchlistSet", Arry);
-							resolve(true);
-						// } else {
-						// 	messages.showText("No Data!");
-						}
-					}.bind(oController),
-					error: function (oError) {
-						// this.byId("table").setBusy(false);
-						// messages.showODataErrorText(oError);
-						that.clearCache();							
-						that.setBusy( false );
-						reject(oError);
-					}.bind(oController)
-				};
-				ODataModel.read(sUrl, mParameters);
-				});
-				return usedbatch;
-			},
-			getallbatch: function (oController) {
-				var that = this;
-				that.byId("table").setBusy(true);
-				that._JSONModel.setProperty("/allbatchlistSet", []);
-				// var sUrl = "/A_OutbDeliveryItem?$filter=Batch ne ''";
-				var oDataUrl = "/destinations/S4HANACLOUD_BASIC/YY1_CDS_BATCH_DATE";
-				var ODataModel = new sap.ui.model.odata.ODataModel(oDataUrl);
-				var allbatch = new Promise(function (resolve, reject){
-				var mParameters = {
-					// filters: allFilters,
-					success: function (oData) {
-						that.byId("table").setBusy(false);
-						var Arry = oData.results;
-						if (Arry.length > 0) {
-							// this.processReaservationItem(Arry);
-							that._JSONModel.setProperty("/allbatchlistSet", Arry);
-							reslove(true);
-						// } else {
-						// 	messages.showText("No Data!");
-						}
-					}.bind(that),
-					error: function (oError) {
-						// this.byId("table").setBusy(false);
-						// messages.showODataErrorText(oError);
-						that.clearCache();							
-						that.setBusy( false );
-						reject(oError);
-					}.bind(that)
-				};
-				ODataModel.read(mParameters);//(sUrl, mParameters);
-				});
-				return allbatch;
+					var pickset = [];
+					pickset.DeliveryDocument =Arry[i].OutboundDelivery;
+					pickset.ShippingPoint  =Arry[i].ShippingPoint; 
+					pickset.SoldToParty =Arry[i].SoldToParty;
+					pickset.CustomerName =Arry[i].CustomerName;
+					pickset.ShipToParty =Arry[i].ShipToParty;
+					pickset.Street =Arry[i].StreetName;
+					pickset.City =Arry[i].CityName;
+					pickset.PostalCode =Arry[i].PostalCode;
+					pickset.Country =Arry[i].Country;
+					pickset.PlannedGoodsIssueDate =Arry[i].PlannedGoodsIssueDate;
+					pickinglist.push(pickset);
+				}
+				// var display = pickinglistSet;
+				this.disdelivery(pickinglist);
+				this._JSONModel.setProperty("/pickinglistSet",pickinglist);
+				// pickinglistSet = pickinglist;
 			},
 
-			getpinqty: function (oController) {
-				var that = this;
-				// var that = oController;
-				that.byId("table").setBusy(true);
-				that._JSONModel.setProperty("/pinqtylistSet", []);
-				var sUrl = "/YY1_BO_PIN_QUAN";
-				var oDataUrl = "/destinations/S4HANACLOUD_BASIC/YY1_BO_PIN_QUAN_CDS";
-				var ODataModel = new sap.ui.model.odata.ODataModel(oDataUrl);
-				var pinqty = new Promise(function (resolve, reject){
-				var mParameters = {
-					// filters: allFilters,
-					success: function (oData) {
-						that.byId("table").setBusy(false);
-						var Arry = oData.results;
-						if (Arry.length > 0) {
-							that._JSONModel.setProperty("/pinqtylistSet", Arry);
-							resolve(true);
-						}
-					}.bind(oController),
-					error: function (oError) {
-						that.clearCache();							
-						that.setBusy( false );
-						reject(oError);
-					}.bind(oController)
-				};
-				ODataModel.read(sUrl, mParameters); //(mParameters);//
-				});
-				return pinqty;
-			},
 			// Print Form
 			onPrint: function (oEvent) {
 				var pickinglistSet = this._JSONModel.getData().pickinglistSet; //
 				var ItemTable = this.getView().byId("table");
 				var selectIndexArry = ItemTable.getSelectedIndices();
 				var selectItemArr = [];
-				if (selectIndexArry.length <= 0) {
-					sap.m.MessageBox.warning("Please select at least one line", {
+				if (selectIndexArry.length == 1) {
+					sap.m.MessageBox.warning("Please select one line", {
+				// if (selectIndexArry.length <= 0) {
+				// 	sap.m.MessageBox.warning("Please select at least one line", {
 						title: "Tips"
 					});
 					this.setBusy(false);
 					return;
 				}
-				// } else {
-				// 	// var str1 = this.Base64Encode("123zhong"); //base64编码
-				// 	// var str2 = this.Base64Decode(str1); //base64解码
-
-				// 	this.getitem();
-				this.printadobe("xmlfield/xmlfile");
-				// }
-				// var deliverydocumentheader = [];
-				// var deliverydocumentitem = [];
-				// for (var y = selectIndexArry.length - 1; y >= 0; y--) {
-				// 	var selectItem = pickinglistSet[selectIndexArry[y]].DeliveryDocument;
-				// 	selectItemArr.push(selectItem);
-				// 	var header = [];
-				// 	header.DeliveryDocument = pickinglistSet[selectIndexArry[y]].DeliveryDocument;
-				// 	header.ShippingPoint = pickinglistSet[selectIndexArry[y]].ShippingPoint;
-				// 	header.SoldToParty = pickinglistSet[selectIndexArry[y]].SoldToParty;
-				// 	header.CustomerName = pickinglistSet[selectIndexArry[y]].CustomerName;
-				// 	header.ShipToParty = pickinglistSet[selectIndexArry[y]].ShipToParty;
-				// 	header.Street = pickinglistSet[selectIndexArry[y]].Street;
-				// 	header.City = pickinglistSet[selectIndexArry[y]].City;
-				// 	header.PostalCode = pickinglistSet[selectIndexArry[y]].PostalCode;
-				// 	header.Country = pickinglistSet[selectIndexArry[y]].Country;
-				// 	header.PlannedGoodsIssueDate = pickinglistSet[selectIndexArry[y]].PlannedGoodsIssueDate;
-				// 	deliverydocumentheader.push(header);
-				// 	var ddil = pickinglistSet[selectIndexArry[y]].to_DeliveryDocumentItem.results.length;
-				// 	// for (var j=0;j<pickinglistSet[selectIndexArry[y]].to_DeliveryDocumentItem.length;j++){
-				// 	for (var j = 0; j < ddil; j++) {
-				// 		var item = [];
-				// 		item.DeliveryDocument = pickinglistSet[selectIndexArry[y]].DeliveryDocument;
-				// 		item.DeliveryDocumentItem = pickinglistSet[selectIndexArry[y]].to_DeliveryDocumentItem.results[j].DeliveryDocumentItem;
-				// 		item.Material = pickinglistSet[selectIndexArry[y]].to_DeliveryDocumentItem.results[j].Material;
-				// 		item.Plant = pickinglistSet[selectIndexArry[y]].to_DeliveryDocumentItem.results[j].Plant;
-				// 		item.MaterialByCustomer = pickinglistSet[selectIndexArry[y]].to_DeliveryDocumentItem.results[j].MaterialByCustomer;
-				// 		item.ActualDeliveryQuantity = pickinglistSet[selectIndexArry[y]].to_DeliveryDocumentItem.results[j].ActualDeliveryQuantity;
-				// 		item.DeliveryQuantityUnit = pickinglistSet[selectIndexArry[y]].to_DeliveryDocumentItem.results[j].DeliveryQuantityUnit;
-				// 		item.StorageLocation = pickinglistSet[selectIndexArry[y]].to_DeliveryDocumentItem.results[j].StorageLocation;
-				// 		deliverydocumentitem.push(item);
-				// 	}
-				// }
-				// var deliverydocumentArr = this.unique(selectItemArr);
-				// if (deliverydocumentArr) {
-				// 	//call pdf templeate first, second,eachitem   third post
-				// 	this.getitem(deliverydocumentArr, deliverydocumentitem);
-				// }
+				this.printadobe();
 			},
 			getitem: function (deliverydocumentArr, deliverydocumentitem) {
 				deliverydocumentitem.sort(function (a, b) {
@@ -645,143 +467,124 @@ sap.ui.define(
 				};
 				ODataModel.read(sUrl, mParameters);
 			},
-
+			
 			printadobe: function () {
 				var arry = "123";
-				// var arry = "<?xml version="1.0 "encoding="utf-8 "?><Form xmlns:xfadata="http:\/\/www.xfa.org/schema/xfa-data/1.0/"><DeliveryDocumentNode><DeliveryDocument>1330</DeliveryDocument></DeliveryDocumentNode></Form>";
-				var str1 = this.Base64Encode(arry);
-				// that.byId("table").setBusy(true);
-				// that._JSONModel.setProperty("/pickinglistSet", []);
-				// var sUrl = "https://adsrestapiformsprocessing-prm3t8tep2.eu2.hana.ondemand.com/ads.restapi/v1/forms/ZCP_Pick_List/templates";
-				// var sUrl = "/destinations/ADS/v1/forms/$metadata?sap-language=ZH";
-				////var sUrl = "https://adsrestapiformsprocessing-prm3t8tep2.eu2.hana.ondemand.com/ads.restapi/";
-				// var sUrl = "https://adsrestapiformsprocessing-prm3t8tep2.eu2.hana.ondemand.com/ads.restapi/v1/forms/ZCP_Pick_List/templates";
-				// var sUrl = "/destinations/ADS_ADOBE/v1/forms/$metadata";
-				// var proxy = 'https://cors-anywhere.herokuapp.com/';
-				// /ZCP_Pick_List/templates";
-				// /ads.restapi/v1/forms/ZCP_Pick_List/templates"; "destinations/ADS";
-				// var ODataModel = new sap.ui.model.odata.ODataModel(oDataUrl);
-				// ODataModel.read(sUrl, mParameters);
-				// this.calltempleate(sUrl,"",proxy); url: proxy + oUrl,
+				var that = this;
 				var gUrl = "/ads.restapi/v1/forms/ZCP_Pick_List/templates";
 				var pUrl = "/ads.restapi/v1/adsRender/pdf";
 				var oRequest = "";
 				var response = "";
-				this.calltempleate(gUrl, "");
-				// var templeate = this.calltempleate(gUrl, "");
-				// if (templeate == "") {
-				// 	sap.m.MessageBox.warning("Please select at least one line", {
-				// 		title: "Tips"
-				// 	});
-				// 	this.setBusy(false);
-				// 	return;
-				// } else {
-				// 	// https://adsrestapiformsprocessing-prm3t8tep2.eu2.hana.ondemand.com/ads.restapi/v1/adsRender/pdf
-				// 	// var str = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Form xmlns:xfadata=\"http:\/\/www.xfa.org/schema/xfa-data/1.0/\"><DeliveryDocumentNode><DeliveryDocument>1330</DeliveryDocument><Item><DeliveryDocumentITEM>10</DeliveryDocumentITEM><Material>a</Material></Item></DeliveryDocumentNode></Form>";
-				// 	// var str1 = this.Base64Encode(str); //base64编码
-				// 	// var oRequest = "{\"xdpTemplate\":\"" + templeate + "\",\"xmlData\": \"" + str1 + "\"}";
-				// 	// var printdata = this.postpdf(pUrl, oRequest);
-				// 	// var printdata1 = this.Base64Decode(printdata);
-				// }
+				// this.calltempleate(gUrl, "")
+				this.calltempleate(gUrl, "").then(function(result){
+					if(result != ""){
+						var str =
+							"<?xml version=\"1.0\" encoding=\"utf-8\"?><Form xmlns:xfadata=\"http:\/\/www.xfa.org/schema/xfa-data/1.0/\"><DeliveryDocumentNode><DeliveryDocument>1330</DeliveryDocument><Item><DeliveryDocumentITEM>10</DeliveryDocumentITEM><Material>a</Material></Item></DeliveryDocumentNode></Form>";
+						var str1 = that.Base64Encode(str); //base64编码
+						var oRequest = "{\"xdpTemplate\":\"" + result + "\",\"xmlData\": \"" + str1 + "\"}";
+						var pUrl = "/ads.restapi/v1/adsRender/pdf";
+						
+						that.postpdf(pUrl, oRequest).then(function(r){
+							that.pdfPreview(r);
+						}).catch(function(oError){
+							messages.showODataErrorText(oError);
+						});
+					}else{
+						messages.showODataErrorText("No PDF generated");
+					}
+				}).catch(function(oError){
+					messages.showODataErrorText("Error");
+				});
 			},
 
 			calltempleate: function (oUrl, oRequest) {
 				// var response = "";
 				var that = this;
-				var aData = $.ajax({
+				var promise = new Promise(function(resolve, reject){
+					var aData = $.ajax({
 					url: oUrl,
 					type: "GET",
 					data: oRequest,
-					/*	headers: { 'Access-Control-Allow-Origin': '*' , 'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE','Access-Control-Allow-Headers': 'Content-Type'
-							         },
-						    */
 					dataType: "json",
 					contentType: "application/json;charset=\"utf-8\"",
 					Accept: "application/json",
 
 					success: function (data, textStatus, jqXHR) {
-						// response = data.xdpTemplate;
-						var templeate = data[0].xdpTemplate;
-						// return response;
-						var str =
-							"<?xml version=\"1.0\" encoding=\"utf-8\"?><Form xmlns:xfadata=\"http:\/\/www.xfa.org/schema/xfa-data/1.0/\"><DeliveryDocumentNode><DeliveryDocument>1330</DeliveryDocument><Item><DeliveryDocumentITEM>10</DeliveryDocumentITEM><Material>a</Material></Item></DeliveryDocumentNode></Form>";
-						var str1 = that.Base64Encode(str); //base64编码
-						var oRequest = "{\"xdpTemplate\":\"" + templeate + "\",\"xmlData\": \"" + str1 + "\"}";
-						var pUrl = "/ads.restapi/v1/adsRender/pdf";
-						// for(循环单据，post生成PDF，判断是否是最后一行)
-						that.postpdf(pUrl, oRequest);
-						// var printdata = this.postpdf(pUrl, oRequest);
-						// var promise = new Promise(function (resolve, reject) {
-						// 	// Get Box Label Data
-						// 	that.postpdf(pUrl, oRequest).then(function(response){
-						// 	if (responses != ""){
-						// 		console.log("COMPLETE222");
-						// 	}}
-						// 		);
-						// 	// if (response ==""){
-						// 	// 	reslove(pp);
-						// 	// }
-						// });
-						// promise.then(function(){
-						// 	console.log("COMPLETE111");}
-						// 	// ).catch(
-						// 	// 	console.log("COMPLETE222");
-						// 		);
-						// return promise;
-						// var promise = new Promise(function (resolve, reject) {
-						// 	var test = that.postpdf(pUrl, oRequest);
-						// 	test.then(function (response) {
-						// 			// Call ZPL Service
-						// 			// that.printBoxLabel(oData);
-						// 			console.log("COMPLETE222");
-						// 		})
-						// 		.catch(function (oError) {
-						// 			that.setBusy(false);
-						// 			messages.responseSplitMessage(oError);
-						// 			reject(oError);
-						// 		});
-						// });
-
-						// var printdata1 = this.Base64Decode(printdata);
+						var template = data[0].xdpTemplate;
+						resolve(template);
 					},
 					error: function (xhr, status) {
-						console.log("ERROR");
-					},
-					complete: function (xhr, status) {
-						console.log("COMPLETE");
+						reject(xhr);
 					}
 				});
+				});
+				return promise;
+				
 			},
 			postpdf: function (oUrl, oRequest) {
 				var response = "";
 				var that = this;
-				var aData = $.ajax({
-					url: oUrl,
-					type: "POST",
-					data: oRequest,
-					dataType: "json",
-					contentType: "application/json;charset=\"utf-8\"",
-					Accept: "application/json",
-
-					success: function (data, textStatus, jqXHR) {
-						response = data.fileContent;
-						// 判断是否是最后一行，PDF预览
-						that.getdocument(response);
-						// return response;
-					},
-					error: function (xhr, status) {
-						console.log("ERROR");
-					},
-					complete: function (xhr, status) {
-						console.log("COMPLETE");
-					}
-
+				var promise = new Promise(function(resolve, reject){
+					var aData = $.ajax({
+						url: oUrl,
+						type: "POST",
+						data: oRequest,
+						dataType: "json",
+						contentType: "application/json;charset=\"utf-8\"",
+						Accept: "application/json",
+	
+						success: function (data, textStatus, jqXHR) {
+							response = data.fileContent;
+							resolve(response);
+						},
+						error: function (xhr, status) {
+							console.log("ERROR");
+							reject(xhr);
+						}
+					});
 				});
+				return promise;
+				
 			},
-			
-			// 					getitem:function(){
-			// this.calltempleate(sUrl,"");
-			// 			}
+			pdfPreview: function(pdfBase64){
+				var decodedPdfContent = atob(pdfBase64);
+				var byteArray = new Uint8Array(decodedPdfContent.length);
+				for (var i = 0; i < decodedPdfContent.length; i++) {
+					byteArray[i] = decodedPdfContent.charCodeAt(i);
+				}
+				var blob = new Blob([byteArray.buffer], {
+					type: 'application/pdf'
+				});
+				var _pdfurl = URL.createObjectURL(blob);
+
+				if (!this._PDFViewer) {
+					this._PDFViewer = new sap.m.PDFViewer({
+						width: "auto",
+						source: _pdfurl
+					});
+					jQuery.sap.addUrlWhitelist("blob"); // register blob url as whitelist
+				}
+				this._PDFViewer.open();
+			},
+			disdelivery: function (arr) {
+			var array = arr;
+			var len = array.length;
+			array.sort();
+			// array.sort(function(a,b){
+			// 	return a.DeliveryDocument < b.DeliveryDocument
+			// });
+			function loop(index) {
+				if (index >= 1) {
+					if (array[index].DeliveryDocument === array[index - 1].DeliveryDocument) {
+						array.splice(index, 1);
+					}
+					loop(index - 1);
+				}
+			}
+			loop(len - 1);
+			return array;
+		},
+
 		});
 
 	});
