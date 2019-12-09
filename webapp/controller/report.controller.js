@@ -251,7 +251,7 @@ sap.ui.define(
 			onSearch: function () {
 				var that = this;
 				var language = this._lang;
-				language = language.substr(0,2);
+				language = language.substr(0, 2);
 				that.byId("table").setBusy(true);
 				that._JSONModel.setProperty("/pickinglistSet", []);
 				// var sUrl = "/A_OutbDeliveryHeader?$expand=to_DeliveryDocumentItem,to_DeliveryDocumentPartner/to_Address";
@@ -286,8 +286,8 @@ sap.ui.define(
 				if (PlannedGIDate != null) {
 					var DateArr = PlannedGIDate.split(" ");
 					var startDate = DateArr[0] + 'T00:00:00';
-					var endDate = DateArr[2] + 'T23:59:59';S             
-					allFilters.push(new Filter('PlannedGoodsIssueDate', sap.ui.model.FilterOperator.BT, startDate,endDate));
+					var endDate = DateArr[2] + 'T23:59:59';
+					allFilters.push(new Filter('PlannedGoodsIssueDate', sap.ui.model.FilterOperator.BT, startDate, endDate));
 				}
 
 				var mParameters = {
@@ -297,6 +297,7 @@ sap.ui.define(
 						var Arry = oData.results;
 						if (Arry.length > 0) {
 							var deliverydocument = oData.results;
+							this._JSONModel.setProperty("/deliverydocumentSet", deliverydocument);
 							that.getdisplay(Arry);
 						} else {
 							messages.showText("No Data!");
@@ -309,139 +310,100 @@ sap.ui.define(
 				};
 				ODataModel.read(sUrl, mParameters);
 			},
-			getdisplay:function (Arry){
+			getdisplay: function (Arry) {
 				var i;
 				var pickinglist = [];
 				var pickinglistSet = this._JSONModel.getProperty("/pickinglistSet");
 				for (i = 0; i < Arry.length; i++) {
 					var pickset = [];
-					pickset.DeliveryDocument =Arry[i].OutboundDelivery;
-					pickset.ShippingPoint  =Arry[i].ShippingPoint; 
-					pickset.SoldToParty =Arry[i].SoldToParty;
-					pickset.CustomerName =Arry[i].CustomerName;
-					pickset.ShipToParty =Arry[i].ShipToParty;
-					pickset.Street =Arry[i].StreetName;
-					pickset.City =Arry[i].CityName;
-					pickset.PostalCode =Arry[i].PostalCode;
-					pickset.Country =Arry[i].Country;
-					pickset.PlannedGoodsIssueDate =Arry[i].PlannedGoodsIssueDate;
+					pickset.DeliveryDocument = Arry[i].OutboundDelivery;
+					pickset.ShippingPoint = Arry[i].ShippingPoint;
+					pickset.SoldToParty = Arry[i].SoldToParty;
+					pickset.CustomerName = Arry[i].CustomerName;
+					pickset.ShipToParty = Arry[i].ShipToParty;
+					pickset.Street = Arry[i].StreetName;
+					pickset.City = Arry[i].CityName;
+					pickset.PostalCode = Arry[i].PostalCode;
+					pickset.Country = Arry[i].Country;
+					pickset.PlannedGoodsIssueDate = Arry[i].PlannedGoodsIssueDate;
 					pickinglist.push(pickset);
 				}
 				// var display = pickinglistSet;
 				this.disdelivery(pickinglist);
-				this._JSONModel.setProperty("/pickinglistSet",pickinglist);
+				this._JSONModel.setProperty("/pickinglistSet", pickinglist);
 				// pickinglistSet = pickinglist;
 			},
 
 			// Print Form
 			onPrint: function (oEvent) {
+				this.byId("page").setBusy(true);
 				var pickinglistSet = this._JSONModel.getData().pickinglistSet; //
 				var ItemTable = this.getView().byId("table");
 				var selectIndexArry = ItemTable.getSelectedIndices();
 				var selectItemArr = [];
+				var that = this;
 				if (selectIndexArry.length !== 1) {
 					sap.m.MessageBox.warning("Please select one line", {
-				// if (selectIndexArry.length <= 0) {
-				// 	sap.m.MessageBox.warning("Please select at least one line", {
+						// if (selectIndexArry.length <= 0) {
+						// 	sap.m.MessageBox.warning("Please select at least one line", {
 						title: "Tips"
 					});
-					this.setBusy(false);
+					this.byId("page").setBusy(false);
 					return;
 				}
-				this.printadobe();
-			},
-			getitem: function (deliverydocumentArr, deliverydocumentitem) {
-				deliverydocumentitem.sort(function (a, b) {
-					if (a.DeliveryDocument === b.deliverydocumentitem) {
-						return a.DeliveryDocumentItem - b.DeliveryDocumentItem
-					} else {
-						return a.deliverydocumentitem - b.deliverydocumentitem
-					}
-				})
-				for (var i = 0; i < deliverydocumentArr.length; i++) {
-					// this.printadobe(deliveryarr[i]);
-					var allFilters = [];
-					var itemSet = [];
-					for (var j = 0; j < deliverydocumentitem.length; j++) {
-						if (deliverydocumentArr[i] == deliverydocumentitem[j].DeliveryDocument) {
-							allFilters.push(new Filter('Material', sap.ui.model.FilterOperator.EQ, "637.837030_1-1C51"));
-							// allFilters.push(new Filter('Material', sap.ui.model.FilterOperator.EQ, deliverydocumentitem[j].Material));
-							// allFilters.push(new Filter('Plant', sap.ui.model.FilterOperator.EQ, deliverydocumentArr[i]));
-							var PalletQuantity = " ";
-							this.getprintitempin(deliverydocumentArr[i], allFilters, PalletQuantity);
-							// var itemset = [];
-							deliverydocumentitem[j].ActualDeliveryQuantity = deliverydocumentitem[j].ActualDeliveryQuantity / PalletQuantity;
-
-							// itemSet.push(itemset);
-						} else {
-							continue;
+				var documentitem = this._JSONModel.getData().deliverydocumentSet;
+				var Arry = [];
+				var oneFilters = [];
+				var allFilters = [];
+				var aFilters = [];
+				for (var j = 0; j < selectIndexArry.length; j++) {
+					var delivery = pickinglistSet[selectIndexArry[j]].DeliveryDocument;
+					for (var i = 0; i < documentitem.length; i++) {
+						if (delivery === documentitem[i].OutboundDelivery) {
+							var item = [];
+							item = documentitem[i];
+							Arry.push(item);
+							oneFilters = [];
+							oneFilters.push(new Filter("Material", sap.ui.model.FilterOperator.EQ, item.Material));
+							oneFilters.push(new Filter("Plant", sap.ui.model.FilterOperator.EQ, item.Plant));
+							allFilters.push(new Filter(oneFilters, true));
 						}
 					}
-					// this.getprintitembatch(deliverydocumentArr[i], allFilters);
-					this.getprintitempin(deliverydocumentArr[i], allFilters, PalletQuantity);
 				}
-			},
-			getprintitembatch: function (obj, alfilters) {
-				this.byId("table").setBusy(true);
-				var object = obj;
-				var pickinglistSet = this._JSONModel.getProperty("/pickinglistSet");
-				var oDataUrl = "/destinations/S4HANACLOUD_BASIC/API_MATERIAL_STOCK_SRV/A_MatlStkInAcctMod";
-				var ODataModel = new sap.ui.model.odata.ODataModel(oDataUrl);
-				var oDataUrly = "/destinations/S4HANACLOUD_BASIC/YY1_BO_PIN_QUAN_CDS/YY1_BO_PIN_QUAN";
-				var ODataModely = new sap.ui.model.odata.ODataModel(oDataUrly);
-				// var oFilter = new sap.ui.model.Filter("Language", sap.ui.model.FilterOperator.EQ, "EN");
-				// var aFilters = [oFilter];
-				// var sUrl = "/A_Product('" + object + "')/to_Description";
-				var mParameters = {
-					filters: alfilters,
-					success: function (oData, response) {
-						this.byId("table").setBusy(false);
-						var a = odata.results;
-						if (oData.results) {
+				var oFilters = new Filter(allFilters, false); // false为并集
+				aFilters.push(oFilters);
+				aFilters.push(new Filter("OutboundDelivery", sap.ui.model.FilterOperator.EQ, null));
 
-							//	object.ProductDescription = oData.results[0].ProductDescription;	
-							// var batchSet = this._JSONModel.getProperty("/batchSet");
-							// for (var i = 0; i < reservationItemsSet.length; i++) {
-							// 	if (reservationItemsSet[i].Product == oData.results[0].Product) {
-							// 		this._JSONModel.setProperty("/reservationItemsSet/" + i + "/ProductDescription", oData.results[0].ProductDescription);
-							// 	}
-							// }
-						}
-					}.bind(this),
-					error: function (oError) {
-						this.byId("table").setBusy(false);
-						messages.showODataErrorText(oError);
-					}.bind(this)
-				};
-				ODataModel.read(oDataUrl, mParameters);
-			},
-			getprintitempin: function (obj, alfilters, PalletQuantity) {
-				this.byId("table").setBusy(true);
-				var object = obj;
-				var pickinglistSet = this._JSONModel.getProperty("/pickinglistSet");
-				var oDataUrl = "/destinations/S4HANACLOUD_BASIC/YY1_BO_PIN_QUAN_CDS";
-				var ODataModel = new sap.ui.model.odata.ODataModel(oDataUrl);
-				// var oFilter = new sap.ui.model.Filter("Language", sap.ui.model.FilterOperator.EQ, "EN");
-				// var aFilters = [oFilter];
-				var sUrl = "/YY1_BO_PIN_QUAN";;
-				var mParameters = {
-					filters: alfilters,
-					success: function (oData, response) {
-						this.byId("table").setBusy(false);
-						if (oData.results) {
-							var PalletQuantity = oData.results[0].PalletQuantity;
-						}
+				if (Arry.length === 0) {
+					this.byId("page").setBusy(false);
+					return;
+				}
 
-					}.bind(this),
-					error: function (oError) {
-						this.byId("table").setBusy(false);
-						messages.showODataErrorText(oError);
-					}.bind(this)
-				};
-				ODataModel.read(sUrl, mParameters);
+				Arry.sort(function (a, b) {
+					if (a.OutboundDelivery === b.OutboundDelivery) {
+						return a.OutboundDeliveryItem - b.OutboundDeliveryItem;
+					} else {
+						return a.OutboundDelivery - b.OutboundDelivery;
+					}
+				});
+				this.getBatchRec(aFilters, that).then(function (result) {
+					var aBatch = that.distinctBatch(result);
+					var aXML = that.processXML(aBatch, Arry, that);
+					// for (var i = 0; i < aXML.length; i++){
+					// 	that.printadobe(xml);
+					// }
+					if(aXML.length===1){
+						that.printadobe(aXML[0]).then(function(r){
+							that.pdfPreview(r);	
+						});
+					}else{
+
+					}
+				});
+
+				// this.printadobe();
 			},
-			
-			printadobe: function () {
+			printadobe: function (xml) {
 				var arry = "123";
 				var that = this;
 				var gUrl = "/ads.restapi/v1/forms/ZCP_Pick_List/templates";
@@ -449,55 +411,62 @@ sap.ui.define(
 				var oRequest = "";
 				var response = "";
 				// this.calltempleate(gUrl, "")
-				this.calltempleate(gUrl, "").then(function(result){
-					if(result != ""){
-						var str =
-							"<?xml version=\"1.0\" encoding=\"utf-8\"?><Form xmlns:xfadata=\"http:\/\/www.xfa.org/schema/xfa-data/1.0/\"><DeliveryDocumentNode><DeliveryDocument>1330</DeliveryDocument><Item><DeliveryDocumentITEM>10</DeliveryDocumentITEM><Material>a</Material></Item></DeliveryDocumentNode></Form>";
-						var str1 = that.Base64Encode(str); //base64编码
-						var oRequest = "{\"xdpTemplate\":\"" + result + "\",\"xmlData\": \"" + str1 + "\"}";
-						var pUrl = "/ads.restapi/v1/adsRender/pdf";
-						
-						that.postpdf(pUrl, oRequest).then(function(r){
-							that.pdfPreview(r);
-						}).catch(function(oError){
-							messages.showODataErrorText(oError);
-						});
-					}else{
-						messages.showODataErrorText("No PDF generated");
-					}
-				}).catch(function(oError){
-					messages.showODataErrorText("Error");
+				var promise = new Promise(function (resolve, reject){
+					that.calltempleate(gUrl, "").then(function (result) {
+						if (result != "") {
+							// var str =
+							// 	"<?xml version=\"1.0\" encoding=\"utf-8\"?><Form xmlns:xfadata=\"http:\/\/www.xfa.org/schema/xfa-data/1.0/\"><DeliveryDocumentNode><DeliveryDocument>1330</DeliveryDocument><Item><DeliveryDocumentITEM>10</DeliveryDocumentITEM><Material>a</Material></Item></DeliveryDocumentNode></Form>";
+							var str1 = that.Base64Encode(xml); //base64编码
+							var oRequest = "{\"xdpTemplate\":\"" + result + "\",\"xmlData\": \"" + str1 + "\"}";
+							var pUrl = "/ads.restapi/v1/adsRender/pdf";
+							that.postpdf(pUrl, oRequest).then(function (r) {
+								resolve(r);
+							}).catch(function (oError) {
+								that.byId("page").setBusy(false);
+								messages.showODataErrorText(oError);
+								reject(true);
+							});
+						} else {
+							that.byId("page").setBusy(false);
+							messages.showODataErrorText("No PDF generated");
+							reject(true);
+						}
+					}).catch(function (oError) {
+						that.byId("page").setBusy(false);
+						messages.showODataErrorText("Error");
+						reject(true);
+					});
 				});
+				return promise;
 			},
 
 			calltempleate: function (oUrl, oRequest) {
 				// var response = "";
 				var that = this;
-				var promise = new Promise(function(resolve, reject){
+				var promise = new Promise(function (resolve, reject) {
 					var aData = $.ajax({
-					url: oUrl,
-					type: "GET",
-					data: oRequest,
-					dataType: "json",
-					contentType: "application/json;charset=\"utf-8\"",
-					Accept: "application/json",
+						url: oUrl,
+						type: "GET",
+						data: oRequest,
+						dataType: "json",
+						contentType: "application/json;charset=\"utf-8\"",
+						Accept: "application/json",
 
-					success: function (data, textStatus, jqXHR) {
-						var template = data[0].xdpTemplate;
-						resolve(template);
-					},
-					error: function (xhr, status) {
-						reject(xhr);
-					}
-				});
+						success: function (data, textStatus, jqXHR) {
+							var template = data[0].xdpTemplate;
+							resolve(template);
+						},
+						error: function (xhr, status) {
+							reject(xhr);
+						}
+					});
 				});
 				return promise;
-				
 			},
 			postpdf: function (oUrl, oRequest) {
 				var response = "";
 				var that = this;
-				var promise = new Promise(function(resolve, reject){
+				var promise = new Promise(function (resolve, reject) {
 					var aData = $.ajax({
 						url: oUrl,
 						type: "POST",
@@ -505,21 +474,19 @@ sap.ui.define(
 						dataType: "json",
 						contentType: "application/json;charset=\"utf-8\"",
 						Accept: "application/json",
-	
+
 						success: function (data, textStatus, jqXHR) {
 							response = data.fileContent;
 							resolve(response);
 						},
 						error: function (xhr, status) {
-							console.log("ERROR");
 							reject(xhr);
 						}
 					});
 				});
 				return promise;
-				
 			},
-			pdfPreview: function(pdfBase64){
+			pdfPreview: function (pdfBase64) {
 				var decodedPdfContent = atob(pdfBase64);
 				var byteArray = new Uint8Array(decodedPdfContent.length);
 				for (var i = 0; i < decodedPdfContent.length; i++) {
@@ -537,27 +504,148 @@ sap.ui.define(
 					});
 					jQuery.sap.addUrlWhitelist("blob"); // register blob url as whitelist
 				}
+				this.byId("page").setBusy(false);
 				this._PDFViewer.open();
 			},
 			disdelivery: function (arr) {
-			var array = arr;
-			var len = array.length;
-			array.sort();
-			// array.sort(function(a,b){
-			// 	return a.DeliveryDocument < b.DeliveryDocument
-			// });
-			function loop(index) {
-				if (index >= 1) {
-					if (array[index].DeliveryDocument === array[index - 1].DeliveryDocument) {
-						array.splice(index, 1);
-					}
-					loop(index - 1);
-				}
-			}
-			loop(len - 1);
-			return array;
-		},
+				var array = arr;
+				var len = array.length;
+				// array.sort();
+				array.sort(function (a, b) {
+					return a.DeliveryDocument - b.DeliveryDocument
+				});
 
+				function loop(index) {
+					if (index >= 1) {
+						if (array[index].DeliveryDocument === array[index - 1].DeliveryDocument) {
+							array.splice(index, 1);
+						}
+						loop(index - 1);
+					}
+				}
+				loop(len - 1);
+				return array;
+			},
+			getBatchRec: function (aFilters, oController) {
+				var oDataUrl = "/destinations/S4HANACLOUD_BASIC/YY1_BATCH_DATE1_CDS";
+				var ODataModel = new sap.ui.model.odata.ODataModel(oDataUrl);
+				var sUrl = "/YY1_BATCH_DATE1";
+				var sortParameter = "Material,Plant,ManufactureDate";
+				var mUrlParameter = {
+					"$orderby": sortParameter
+				};
+				var promise = new Promise(function (resolve, reject) {
+					var mParameters = {
+						filters: aFilters,
+						urlParameters: mUrlParameter,
+						// sorters: aSorters,
+						success: function (oData, response) {
+							// this.setBusy( false ); 
+							var result = {};
+							if (oData.results) {
+								result = oData.results;
+							}
+							resolve(result);
+						}.bind(oController),
+						error: function (oError) {
+							oController.setBusy(false);
+							messages.showODataErrorText(oError);
+							reject(oError);
+						}.bind(oController)
+					};
+					ODataModel.read(sUrl, mParameters);
+				});
+				return promise;
+			},
+			processXML: function (aBatch, aDoc, oController) {
+				var count = 0;
+				var aXML = [];
+				var xml = "";
+				var batch = "";
+				var date = "";
+				var item = "";
+				var container = 0;
+				for (var i = 0; i < aDoc.length; i++) {
+					count = 0;
+					batch = "";
+					date = "";
+					if (parseInt(aDoc[i].PalletQuantity) !== 0 && aDoc[i].PalletQuantity !== "") {
+						container = Math.ceil(parseInt(aDoc[i].ActualDeliveryQuantity) / parseInt(aDoc[i].PalletQuantity));
+					} else {
+						container = 0;
+					}
+					for (var j = 0; j < aBatch.length; j++) {
+						if (aBatch[j].Material === aDoc[i].Material && aBatch[j].Plant === aDoc[i].Plant) {
+							count++;
+							if (count > container || container === 0) {
+								break;
+							}
+							batch = batch === "" ? aBatch[j].Batch : batch + "\n" + aBatch[j].Batch;
+							date = date === "" ? aBatch[j].ManufactureDate.split("T")[0] : date + "\n" + aBatch[j].ManufactureDate.split("T")[0];
+						};
+					};
+					item = item + "<Item><DeliveryDocumentItem>" + aDoc[i].OutboundDeliveryItem + "</DeliveryDocumentItem>";
+					item = item + "<Material>" + aDoc[i].Material + "</Material>";
+					item = item + "<Plant>" + aDoc[i].Plant + "</Plant>";
+					item = item + "<MaterialByCustomer>" + aDoc[i].MaterialByCustomer + "</MaterialByCustomer>";
+					item = item + "<ActualDeliveryQuantity>" + aDoc[i].ActualDeliveryQuantity + "</ActualDeliveryQuantity>";
+					item = item + "<DeliveryQuantityUnit>" + aDoc[i].DeliveryQuantityUnit + "</DeliveryQuantityUnit>";
+					item = item + "<StorageLocation>" + aDoc[i].StorageLocation + "</StorageLocation>";
+					if (container !== 0) {
+						item = item + "<PinQuantity>" + container + "</PinQuantity>";
+						item = item + "<Batch>" + batch + "</Batch>";
+						item = item + "<ManufactureDate>" + date + "</ManufactureDate></Item>";
+					} else {
+						item = item + "</Item>";
+					}
+
+					if (aDoc[i + 1] === undefined) {
+						xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Form><DeliveryDocumentNode>";
+						xml = xml + "<DeliveryDocument>" + aDoc[i].OutboundDelivery + "</DeliveryDocument>";
+						xml = xml + "<ShippingPoint>" + aDoc[i].ShippingPoint + "</ShippingPoint>";
+						xml = xml + "<SoldToParty>" + aDoc[i].SoldToParty + "</SoldToParty>";
+						xml = xml + "<CustomerName>" + aDoc[i].CustomerName + "</CustomerName>";
+						xml = xml + "<ShipToParty>" + aDoc[i].ShipToParty + "</ShipToParty>";
+						// xml = xml + "<ShipToName>" + "</ShipToName>";
+						xml = xml + "<Street>" + aDoc[i].StreetName + "</Street>";
+						xml = xml + "<City>" + aDoc[i].CityName + "</City>";
+						xml = xml + "<PostalCode>" + aDoc[i].PostalCode + "</PostalCode>";
+						xml = xml + "<Country>" + aDoc[i].Country + "</Country>";
+						xml = xml + "<PlannedGoodsIssueDate>" + aDoc[i].PlannedGoodsIssueDate.split("T")[0] + "</PlannedGoodsIssueDate>";
+						xml = xml + item + "</DeliveryDocumentNode></Form>"
+						aXML.push(xml);
+						item = "";
+					} else if (aDoc[i].OutboundDelivery !== aDoc[i + 1].OutboundDelivery) {
+						xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Form><DeliveryDocumentNode>";
+						xml = xml + "<DeliveryDocument>" + aDoc[i].OutboundDelivery + "</DeliveryDocument>";
+						xml = xml + "<ShippingPoint>" + aDoc[i].ShippingPoint + "</ShippingPoint>";
+						xml = xml + "<SoldToParty>" + aDoc[i].SoldToParty + "</SoldToParty>";
+						xml = xml + "<CustomerName>" + aDoc[i].CustomerName + "</CustomerName>";
+						xml = xml + "<ShipToParty>" + aDoc[i].ShipToParty + "</ShipToParty>";
+						// xml = xml + "<ShipToName>" + "</ShipToName>";
+						xml = xml + "<Street>" + aDoc[i].StreetName + "</Street>";
+						xml = xml + "<City>" + aDoc[i].CityName + "</City>";
+						xml = xml + "<PostalCode>" + aDoc[i].PostalCode + "</PostalCode>";
+						xml = xml + "<Country>" + aDoc[i].Country + "</Country>";
+						xml = xml + "<PlannedGoodsIssueDate>" + aDoc[i].PlannedGoodsIssueDate.split("T")[0] + "</PlannedGoodsIssueDate>";
+						xml = xml + item + "</DeliveryDocumentNode></Form>"
+						aXML.push(xml);
+						item = "";
+					}
+				}
+				return aXML;
+			},
+			distinctBatch: function (arr) {
+				var obj = {};
+				var result = [];
+				for (var i = 0; i < arr.length; i++) {
+					if (obj[arr[i].Batch]===undefined) {
+						result.push(arr[i]);
+						obj[arr[i].Batch] = 1;
+					}
+				}
+				return result;
+			}
 		});
 
 	});
