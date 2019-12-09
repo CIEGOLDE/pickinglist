@@ -7,7 +7,7 @@
 						<HBox>
 							<HBox width="1%"></HBox>								
 							<HBox width="98%" class="hboxBackgroundColor hboxBackgroundPanel">
-							<Panel width="100%">
+							<!--<Panel width="100%">-->
 								<VBox width="100%">
 								<HBox width="98%">
 										<VBox width="10%" justifyContent="Center">
@@ -52,7 +52,7 @@
 										</HBox>
 									</HBox>
 								</VBox>
-							</Panel>
+							<!--</Panel>-->
 						    </HBox>
 							<HBox width="1%"></HBox>							    
 					    </HBox> 
