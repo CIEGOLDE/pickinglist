@@ -512,7 +512,7 @@ sap.ui.define(
 				var len = array.length;
 				// array.sort();
 				array.sort(function (a, b) {
-					return a.DeliveryDocument - b.DeliveryDocument
+					return a.DeliveryDocument - b.DeliveryDocument;
 				});
 
 				function loop(index) {
@@ -612,7 +612,7 @@ sap.ui.define(
 						xml = xml + "<PostalCode>" + aDoc[i].PostalCode + "</PostalCode>";
 						xml = xml + "<Country>" + aDoc[i].Country + "</Country>";
 						xml = xml + "<PlannedGoodsIssueDate>" + aDoc[i].PlannedGoodsIssueDate.split("T")[0] + "</PlannedGoodsIssueDate>";
-						xml = xml + item + "</DeliveryDocumentNode></Form>"
+						xml = xml + item + "</DeliveryDocumentNode></Form>";
 						aXML.push(xml);
 						item = "";
 					} else if (aDoc[i].OutboundDelivery !== aDoc[i + 1].OutboundDelivery) {
@@ -628,7 +628,7 @@ sap.ui.define(
 						xml = xml + "<PostalCode>" + aDoc[i].PostalCode + "</PostalCode>";
 						xml = xml + "<Country>" + aDoc[i].Country + "</Country>";
 						xml = xml + "<PlannedGoodsIssueDate>" + aDoc[i].PlannedGoodsIssueDate.split("T")[0] + "</PlannedGoodsIssueDate>";
-						xml = xml + item + "</DeliveryDocumentNode></Form>"
+						xml = xml + item + "</DeliveryDocumentNode></Form>";
 						aXML.push(xml);
 						item = "";
 					}
