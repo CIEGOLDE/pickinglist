@@ -95,7 +95,7 @@ sap.ui.define(
 				var jsonModel = new JSONModel();
 				// var sUrl = "/A_OutbDeliveryHeader?$expand=to_DeliveryDocumentPartner/to_Address";
 				// var oDataUrl = "/destinations/S4HANACLOUD_BASIC/API_OUTBOUND_DELIVERY_SRV";
-				var jUrl = "/destinations/S4HANACLOUD_BASIC/API_OUTBOUND_DELIVERY_SRV/A_OutbDeliveryHeader";
+				var jUrl = "/destinations/S4HANACLOUD_BASIC/API_OUTBOUND_DELIVERY_SRV/A_OutbDeliveryHeader?$filter=DeliveryDocumentType eq 'LF' or DeliveryDocumentType eq 'NL'";
 				// var jUrl = "/destinations/S4HANACLOUD_BASIC/YY1_FUNCTIONALLOCATION_CDS/YY1_FunctionalLocation";
 				var query = "$select=DeliveryDocument";
 				jsonModel.attachRequestCompleted(function () {
@@ -266,8 +266,8 @@ sap.ui.define(
 				var PlannedGIDate = that.byId("PlannedGoodsIssueDate").getValue();
 				var allFilters = [];
 				var i, k;
-				allFilters.push(new Filter('ShipLang', sap.ui.model.FilterOperator.EQ, language));
-				allFilters.push(new Filter('SoldLang', sap.ui.model.FilterOperator.EQ, language));
+				// allFilters.push(new Filter('ShipLang', sap.ui.model.FilterOperator.EQ, language));
+				// allFilters.push(new Filter('SoldLang', sap.ui.model.FilterOperator.EQ, language));
 				if (ShippingPoint.length > 0) {
 					for (i = 0; i < ShippingPoint.length; i++) {
 						allFilters.push(new Filter('ShippingPoint', sap.ui.model.FilterOperator.EQ, ShippingPoint[i].mProperties.key));
@@ -280,7 +280,7 @@ sap.ui.define(
 				}
 				if (DeliveryDocument.length > 0) {
 					for (i = 0; i < DeliveryDocument.length; i++) {
-						allFilters.push(new Filter('DeliveryDocument', sap.ui.model.FilterOperator.EQ, DeliveryDocuments[i].mProperties.key));
+						allFilters.push(new Filter('OutboundDelivery', sap.ui.model.FilterOperator.EQ, DeliveryDocument[i].mProperties.key));
 					}
 				}
 				if (PlannedGIDate != null) {
@@ -373,7 +373,9 @@ sap.ui.define(
 				var oFilters = new Filter(allFilters, false); // false为并集
 				aFilters.push(oFilters);
 				aFilters.push(new Filter("OutboundDelivery", sap.ui.model.FilterOperator.EQ, null));
-
+				var bFilters = [];
+				bFilters.push(oFilters);
+				
 				if (Arry.length === 0) {
 					this.byId("page").setBusy(false);
 					return;
@@ -388,7 +390,17 @@ sap.ui.define(
 				});
 				this.getBatchRec(aFilters, that).then(function (result) {
 					var aBatch = that.distinctBatch(result);
-					var aXML = that.processXML(aBatch, Arry, that);
+					that.batchstock(bFilters, that).then(function (bresult) {//new
+					var bBatch = bresult;
+					var cBatch = [];
+					for ( i = 0; i<aBatch.length; i++) {
+						for (j= 0;j<bBatch.length;j++){
+							if (aBatch[i].Material === bBatch[j].Material & aBatch[i].Plant === bBatch[j].Plant & aBatch[i].Batch === bBatch[j].Batch){
+								cBatch.push(aBatch[i]);
+							}
+						}
+					}
+					var aXML = that.processXML(cBatch, Arry, that);
 					// for (var i = 0; i < aXML.length; i++){
 					// 	that.printadobe(xml);
 					// }
@@ -399,6 +411,8 @@ sap.ui.define(
 					}else{
 
 					}
+					
+					});//new
 				});
 
 				// this.printadobe();
@@ -581,7 +595,11 @@ sap.ui.define(
 								break;
 							}
 							batch = batch === "" ? aBatch[j].Batch : batch + "\n" + aBatch[j].Batch;
-							date = date === "" ? aBatch[j].ManufactureDate.split("T")[0] : date + "\n" + aBatch[j].ManufactureDate.split("T")[0];
+							if (aBatch[j].ManufactureDate != null) {
+								date = date === "" ? aBatch[j].ManufactureDate.split("T")[0] : date + "\n" + aBatch[j].ManufactureDate.split("T")[0];
+							} else {
+								date = date === "" ? " " : date + "\n" + " ";
+							}
 						};
 					};
 					item = item + "<Item><DeliveryDocumentItem>" + aDoc[i].OutboundDeliveryItem + "</DeliveryDocumentItem>";
@@ -645,6 +663,38 @@ sap.ui.define(
 					}
 				}
 				return result;
+			},
+			batchstock: function(aFilters,oController) {
+				var oDataUrl = "/destinations/S4HANACLOUD_BASIC/API_MATERIAL_STOCK_SRV";
+				var ODataModel = new sap.ui.model.odata.ODataModel(oDataUrl);
+				var sUrl = "/A_MatlStkInAcctMod";
+				var sortParameter = "Material,Plant";
+				var mUrlParameter = {
+					"$orderby": sortParameter
+				};
+				aFilters.push(new Filter("MatlWrhsStkQtyInMatlBaseUnit ", sap.ui.model.FilterOperator.NE, 0));
+				var promise = new Promise(function (resolve, reject) {
+					var mParameters = {
+						filters: aFilters,
+						urlParameters: mUrlParameter,
+						// sorters: aSorters,
+						success: function (oData, response) {
+							// this.setBusy( false ); 
+							var result = {};
+							if (oData.results) {
+								result = oData.results;
+							}
+							resolve(result);
+						}.bind(oController),
+						error: function (oError) {
+							oController.setBusy(false);
+							messages.showODataErrorText(oError);
+							reject(oError);
+						}.bind(oController)
+					};
+					ODataModel.read(sUrl, mParameters);
+				});
+				return promise;
 			}
 		});
 
