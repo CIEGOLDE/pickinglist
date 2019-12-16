@@ -7,7 +7,7 @@ sap.ui.define(
 		"sap/ui/model/Filter",
 		"sap/m/Token",
 		"cie/pickinglist/util/echarts",
-		"cie/pickinglist/pdf/build/pdf",
+		// "cie/pickinglist/pdf/build/pdf",
 		"sap/m/MessageToast"
 	],
 	function (BaseController, designMode, messages, JSONModel, Spreadsheet, Filter, Token, echartsjs, MessageToast) {
@@ -203,7 +203,9 @@ sap.ui.define(
 					return;
 				} else {
 					for (var i = 0; i < dataArr.length; i++) {
+						/* eslint-disable sap-no-ui5base-prop */
 						var text = dataArr[i].mAggregations.cells[0].mProperties.text;
+						/* eslint-disable sap-no-ui5base-prop */
 						oMultiInput1.addToken(new Token({
 							key: text,
 							text: text
@@ -220,7 +222,9 @@ sap.ui.define(
 					return;
 				} else {
 					for (var i = 0; i < dataArr.length; i++) {
+						/* eslint-disable sap-no-ui5base-prop */
 						var text = dataArr[i].mAggregations.cells[0].mProperties.text;
+						/* eslint-disable sap-no-ui5base-prop */
 						oMultiInput1.addToken(new Token({
 							key: text,
 							text: text
@@ -237,7 +241,9 @@ sap.ui.define(
 					return;
 				} else {
 					for (var i = 0; i < dataArr.length; i++) {
+						/* eslint-disable sap-no-ui5base-prop */
 						var text = dataArr[i].mAggregations.cells[0].mProperties.text;
+						/* eslint-disable sap-no-ui5base-prop */
 						oMultiInput1.addToken(new Token({
 							key: text,
 							text: text
