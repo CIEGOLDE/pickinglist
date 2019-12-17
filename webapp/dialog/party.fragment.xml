@@ -1,6 +1,6 @@
 <core:FragmentDefinition xmlns="sap.m" xmlns:l="sap.ui.layout"
 	xmlns:u="sap.ui.unified" xmlns:f="sap.ui.layout.form" xmlns:core="sap.ui.core">
-	<Dialog id="PartyDialog" title="Customer">
+	<Dialog id="PartyDialog" title="{i18n>Customer}">
 		<content>
 			<!-- Functional Location Search Help -->
 			<Panel expandable="false" expanded="true">
@@ -9,10 +9,10 @@
 				<Table id="ZPARTY_TTable" items="{/partyF4Set}" growing="true" growingThreshold="100" mode='MultiSelect'>
 					<columns>
 						<Column>
-							<Text text="Customer" />
+							<Text text="{i18n>Customer}" />
 						</Column>
 						<Column minScreenWidth="Tablet">
-							<Text text="Name" />
+							<Text text="{i18n>CustomerName}" />
 						</Column>
 					</columns>
 					<items>
@@ -29,10 +29,10 @@
 		</content>
 		<buttons>
 			<!-- 确认按钮 -->
-			<Button type="Emphasized" text="Confirm"
+			<Button type="Emphasized" text="{i18n>Confirm}"
 				press="onConfirmActionp" visible="true" />
 			<!-- 取消按钮 -->
-			<Button type="Emphasized" text="Cancel"
+			<Button type="Emphasized" text="{i18n>Cancel}"
 				press="onCancelAction" />
 		</buttons>
 	</Dialog>

@@ -199,7 +199,7 @@ sap.ui.define(
 				var oMultiInput1 = this.getView().byId("ShippingPoint");
 				var dataArr = this._LocDialog.getContent()[0].getContent()[1].getSelectedItems();
 				if (dataArr.length === 0) {
-					messages.showText("No data Seletecd");
+					messages.showText(this._ResourceBundle.getText("errMsg3"));
 					return;
 				} else {
 					for (var i = 0; i < dataArr.length; i++) {
@@ -218,7 +218,7 @@ sap.ui.define(
 				var oMultiInput1 = this.getView().byId("Customer");
 				var dataArr = this._PartyDialog.getContent()[0].getContent()[1].getSelectedItems();
 				if (dataArr.length === 0) {
-					messages.showText("No data Seletecd");
+					messages.showText(this._ResourceBundle.getText("errMsg3"));
 					return;
 				} else {
 					for (var i = 0; i < dataArr.length; i++) {
@@ -237,7 +237,7 @@ sap.ui.define(
 				var oMultiInput1 = this.getView().byId("DeliveryDocument");
 				var dataArr = this._DeliveryDialog.getContent()[0].getContent()[1].getSelectedItems();
 				if (dataArr.length === 0) {
-					messages.showText("No data Seletecd");
+					messages.showText(this._ResourceBundle.getText("errMsg3"));
 					return;
 				} else {
 					for (var i = 0; i < dataArr.length; i++) {
@@ -349,10 +349,10 @@ sap.ui.define(
 				var selectItemArr = [];
 				var that = this;
 				if (selectIndexArry.length !== 1) {
-					sap.m.MessageBox.warning("Please select one line", {
+					sap.m.MessageBox.warning(this._ResourceBundle.getText("errMsg1"), {
 						// if (selectIndexArry.length <= 0) {
 						// 	sap.m.MessageBox.warning("Please select at least one line", {
-						title: "Tips"
+						title: this._ResourceBundle.getText("Tips")
 					});
 					this.byId("page").setBusy(false);
 					return;
@@ -448,7 +448,7 @@ sap.ui.define(
 							});
 						} else {
 							that.byId("page").setBusy(false);
-							messages.showODataErrorText("No PDF generated");
+							messages.showODataErrorText(this._ResourceBundle.getText("errMsg2"));
 							reject(true);
 						}
 					}).catch(function (oError) {

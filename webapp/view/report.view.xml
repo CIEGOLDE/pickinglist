@@ -11,7 +11,7 @@
 								<VBox width="100%">
 								<HBox width="98%">
 										<VBox width="10%" justifyContent="Center">
-											<Text text="Shipping Point：" textAlign="End" width="100%" />
+											<Text text="{i18n>ShippingPoint}" textAlign="End" width="100%" />
 										</VBox>
 										<VBox width="8%">
 											<MultiInput id="ShippingPoint" type="Text" placeholder="" 
@@ -21,7 +21,7 @@
 											</MultiInput>	
 										</VBox>
 										<VBox width="10%" justifyContent="Center">
-											<Text text="Ship-To Party：" textAlign="End" width="100%" />
+											<Text text="{i18n>Ship-ToParty}" textAlign="End" width="100%" />
 										</VBox>
 										<VBox width="12%">
 												<MultiInput id="Customer" type = "Text" placeholder = "" 
@@ -31,7 +31,7 @@
 												</MultiInput>
 										</VBox>
 										<VBox width="12%" justifyContent="Center">
-											<Text text="Outbound Delivery：" textAlign="End" width="100%" />
+											<Text text="{i18n>OutboundDelivery}" textAlign="End" width="100%" />
 										</VBox>
 										<VBox width="12%">
 												<MultiInput id="DeliveryDocument" type = "Text" placeholder = "" 
@@ -41,14 +41,14 @@
 												</MultiInput>
 										</VBox>
 										<VBox width="12%" justifyContent="Center" >
-											<Text text="Planned GI Date：" textAlign="End" width="100%" />
+											<Text text="{i18n>PlannedGIDate}" textAlign="End" width="100%" />
 										</VBox>
 										<VBox width="17%">
 											<DateRangeSelection id="PlannedGoodsIssueDate" displayFormat="yyyy-MM-dd" placeholder=" "/>											
 										</VBox>
 										<VBox width="1%" justifyContent="Center" />										
 										<HBox width="3%" justifyContent="End">
-											<Button  text="Go" press="onSearch" />
+											<Button  text="{i18n>Go}" press="onSearch" />
 										</HBox>
 									</HBox>
 								</VBox>
@@ -68,70 +68,70 @@
 							<t:toolbar>
 							<OverflowToolbar>
 								<content>
-									<Title id="title" text="picking list: Print" />
+									<Title id="title" text="{i18n>tableheader}" />
 									<ToolbarSpacer/>									
 									<!--<Button type="Transparent" icon="sap-icon://delete" text="Delete" press="onDelete"/>-->
-									<Button type="Transparent" icon="sap-icon://print" text="Print" press="onPrint"/>
+									<Button type="Transparent" icon="sap-icon://print" text="{i18n>Print}" press="onPrint"/>
 								</content>
 							</OverflowToolbar>
 							</t:toolbar>											
 										<t:columns>
 											<t:Column filterProperty="Outbound Delivery" hAlign="Left" width="8rem">
-												<Label text="Outbound Delivery" />
+												<Label text="{i18n>OutboundDelivery}" />
 												<t:template>
 													<Text text="{DeliveryDocument}" wrapping="false"/>
 												</t:template>
 											</t:Column>
 											<t:Column  width="10%" hAlign="Left">
-												<Label text="Shipping Point" />
+												<Label text="{i18n>ShippingPoint}" />
 												<t:template>
 													<Text text="{ShippingPoint}" wrapping="false" />
 												</t:template>
 											</t:Column>
 											<t:Column width="10%">
-												<Label text="Sold To" />
+												<Label text="{i18n>SoldTo}" />
 												<t:template>
 													<Text text="{SoldToParty}" wrapping="false" />
 												</t:template>
 											</t:Column>
 											<t:Column width="22%">
-												<Label text="Customer Name" />
+												<Label text="{i18n>CustomerName}" />
 												<t:template>
 													<Text text="{CustomerName}" wrapping="false" />
 												</t:template>
 											</t:Column>
 											<t:Column filterProperty="Ship-To Party" hAlign="Left" width="10%">
-												<Label text="Ship To" />
+												<Label text="{i18n>Ship-ToParty}" />
 												<t:template>
 													<Text text="{ShipToParty}" wrapping="false" />
 												</t:template>
 											</t:Column>
 											<t:Column width="13%">
-												<Label text="Street" />
+												<Label text="{i18n>Street}" />
 												<t:template>
 													<Text text="{Street}" wrapping="false" />
 												</t:template>
 											</t:Column>
 											<t:Column width="8%">
-												<Label text="City" />
+												<Label text="{i18n>City}" />
 												<t:template>
 													<Text text="{City}" wrapping="false" />
 												</t:template>
 											</t:Column>
 											<t:Column width="8%">
-												<Label text="Postal Code" />
+												<Label text="{i18n>PostalCode}" />
 												<t:template>
 													<Text text="{PostalCode}" wrapping="false" />
 												</t:template>
 											</t:Column>
 											<t:Column width="6%">
-												<Label text="Country" />
+												<Label text="{i18n>Country}" />
 												<t:template>
 													<Text text="{Country}" wrapping="false" />
 												</t:template>
 											</t:Column>
 											<t:Column width="23%">
-												<Label text="Planned Goods Movement Date" />
+												<Label text="{i18n>PlannedDate}" />
 												<t:template>
 													<Text text="{PlannedGoodsIssueDate}" wrapping="true" />
 												</t:template>
