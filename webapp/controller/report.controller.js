@@ -529,7 +529,7 @@ sap.ui.define(
 					});
 					jQuery.sap.addUrlWhitelist("blob"); // register blob url as whitelist
 				}else{
-					this._PDFViewer.setProperty("source",_pdfurl)
+					this._PDFViewer.setProperty("source",_pdfurl);
 				}
 				this.byId("page").setBusy(false);
 				this._PDFViewer.open();
@@ -556,6 +556,7 @@ sap.ui.define(
 			getBatchRec: function (aFilters, oController) {
 				var oDataUrl = "/destinations/S4HANACLOUD_BASIC/YY1_BATCH_DATE1_CDS";
 				var ODataModel = new sap.ui.model.odata.ODataModel(oDataUrl);
+				var username = this.getCurrentUser();
 				var sUrl = "/YY1_BATCH_DATE1";
 				var sortParameter = "Material,Plant,ManufactureDate";
 				var mUrlParameter = {
@@ -708,7 +709,14 @@ sap.ui.define(
 					ODataModel.read(sUrl, mParameters);
 				});
 				return promise;
-			}
+			},
+			getCurrentUser: function(){
+			   // for test
+			   var userModel = new JSONModel();
+			   userModel.loadData("/services/userapi/currentUser", null, false);
+			   this.setModel(userModel, "userapi");
+			   return userModel.oData.name;
+			 }
 		});
 
 	});

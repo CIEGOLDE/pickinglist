@@ -86,7 +86,14 @@
         "name": "pdfMerge" 
       },
       "description": "pdfMerge"
-	}
+	},
+	{
+	  "path": "/services/userapi",
+	  "target": {
+	   "type": "service",
+	   "name": "userapi"
+	  }
+	 } 
   ],
   "sendWelcomeFileRedirect": true
 }
