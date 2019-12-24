@@ -71,7 +71,7 @@
 									<Title id="title" text="{i18n>tableheader}" />
 									<ToolbarSpacer/>									
 									<!--<Button type="Transparent" icon="sap-icon://delete" text="Delete" press="onDelete"/>-->
-									<Button type="Transparent" icon="sap-icon://print" text="{i18n>Print}" press="onPrint"/>
+									<Button id="btnPrint" type="Transparent" icon="sap-icon://print" text="{i18n>Print}" enabled="false" press="onPrint"/>
 								</content>
 							</OverflowToolbar>
 							</t:toolbar>											
