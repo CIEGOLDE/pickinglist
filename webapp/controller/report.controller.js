@@ -528,6 +528,8 @@ sap.ui.define(
 						source: _pdfurl
 					});
 					jQuery.sap.addUrlWhitelist("blob"); // register blob url as whitelist
+				}else{
+					this._PDFViewer.setProperty("source",_pdfurl)
 				}
 				this.byId("page").setBusy(false);
 				this._PDFViewer.open();
