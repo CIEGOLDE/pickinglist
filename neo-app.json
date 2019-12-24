@@ -78,6 +78,14 @@
         "name": "ADS_ADOBE" 
       },
       "description": "ADS_ADOBE"
+	},
+    {
+      "path": "/pdfMerge",
+      "target": {
+        "type": "destination",
+        "name": "pdfMerge" 
+      },
+      "description": "pdfMerge"
 	}
   ],
   "sendWelcomeFileRedirect": true

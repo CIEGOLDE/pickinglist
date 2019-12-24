@@ -33,6 +33,7 @@ sap.ui.define(
 				oView.byId("DeliveryDocument").addValidator(fValidator);
 				this.initDateRange();
 				this.getInitData();
+				this.calltempleate();
 			},
 			onAfterRendering: function () {
 				this.initLocationF4Help();
@@ -348,10 +349,8 @@ sap.ui.define(
 				var selectIndexArry = ItemTable.getSelectedIndices();
 				var selectItemArr = [];
 				var that = this;
-				if (selectIndexArry.length !== 1) {
+				if (selectIndexArry.length > 10) {
 					sap.m.MessageBox.warning(this._ResourceBundle.getText("errMsg1"), {
-						// if (selectIndexArry.length <= 0) {
-						// 	sap.m.MessageBox.warning("Please select at least one line", {
 						title: this._ResourceBundle.getText("Tips")
 					});
 					this.byId("page").setBusy(false);
@@ -397,91 +396,74 @@ sap.ui.define(
 				this.getBatchRec(aFilters, that).then(function (result) {
 					var aBatch = that.distinctBatch(result);
 					that.batchstock(bFilters, that).then(function (bresult) {//new
-					var bBatch = bresult;
-					var cBatch = [];
-					for ( i = 0; i<aBatch.length; i++) {
-						for (j= 0;j<bBatch.length;j++){
-							if (aBatch[i].Material === bBatch[j].Material & aBatch[i].Plant === bBatch[j].Plant & aBatch[i].Batch === bBatch[j].Batch){
-								cBatch.push(aBatch[i]);
+						var bBatch = bresult;
+						var cBatch = [];
+						var oRequest = [];
+						for ( i = 0; i<aBatch.length; i++) {
+							for (j= 0;j<bBatch.length;j++){
+								if (aBatch[i].Material === bBatch[j].Material & aBatch[i].Plant === bBatch[j].Plant & aBatch[i].Batch === bBatch[j].Batch){
+									cBatch.push(aBatch[i]);
+								}
 							}
 						}
-					}
-					var aXML = that.processXML(cBatch, Arry, that);
-					// for (var i = 0; i < aXML.length; i++){
-					// 	that.printadobe(xml);
-					// }
-					if(aXML.length===1){
-						that.printadobe(aXML[0]).then(function(r){
-							that.pdfPreview(r);	
-						});
-					}else{
-
-					}
-					
+						var aXML = that.processXML(cBatch, Arry, that);
+						that._JSONModel.setProperty("/printTotal",aXML.length);
+						that._JSONModel.setProperty("/b64Set", []);
+						that._JSONModel.setProperty("/printError", false);
+						for (var i = 0; i < aXML.length; i++){
+							that.printadobe(aXML[i]);
+						}
 					});//new
 				});
-
-				// this.printadobe();
 			},
 			printadobe: function (xml) {
-				var arry = "123";
 				var that = this;
-				var gUrl = "/ads.restapi/v1/forms/ZCP_Pick_List/templates";
 				var pUrl = "/ads.restapi/v1/adsRender/pdf";
-				var oRequest = "";
 				var response = "";
-				// this.calltempleate(gUrl, "")
-				var promise = new Promise(function (resolve, reject){
-					that.calltempleate(gUrl, "").then(function (result) {
-						if (result != "") {
-							// var str =
-							// 	"<?xml version=\"1.0\" encoding=\"utf-8\"?><Form xmlns:xfadata=\"http:\/\/www.xfa.org/schema/xfa-data/1.0/\"><DeliveryDocumentNode><DeliveryDocument>1330</DeliveryDocument><Item><DeliveryDocumentITEM>10</DeliveryDocumentITEM><Material>a</Material></Item></DeliveryDocumentNode></Form>";
-							var str1 = that.Base64Encode(xml); //base64编码
-							var oRequest = "{\"xdpTemplate\":\"" + result + "\",\"xmlData\": \"" + str1 + "\"}";
-							var pUrl = "/ads.restapi/v1/adsRender/pdf";
-							that.postpdf(pUrl, oRequest).then(function (r) {
-								resolve(r);
-							}).catch(function (oError) {
-								that.byId("page").setBusy(false);
-								messages.showODataErrorText(oError);
-								reject(true);
-							});
-						} else {
-							that.byId("page").setBusy(false);
-							messages.showODataErrorText(this._ResourceBundle.getText("errMsg2"));
-							reject(true);
-						}
-					}).catch(function (oError) {
+				var template = this._JSONModel.getProperty("/printTemplate");
+				var total = this._JSONModel.getProperty("/printTotal");
+				var str1 = that.Base64Encode(xml); //base64编码
+				var oRequest = "{\"xdpTemplate\":\"" + template + "\",\"xmlData\": \"" + str1 + "\"}";
+				that.postpdf(pUrl, oRequest).then(function (r) {
+					var b64Set = that._JSONModel.getProperty("/b64Set");
+					if(b64Set.length+1 == total){
+						b64Set.push(r);
+						that.pdfMerge(b64Set);
+					}else{
+						b64Set.push(r);
+						that._JSONModel.setProperty("/b64Set", b64Set);
+					};
+				}).catch(function (oError) {
+					if(!that._JSONModel.setProperty("/printError")){
 						that.byId("page").setBusy(false);
-						messages.showODataErrorText("Error");
-						reject(true);
-					});
+						that._JSONModel.setProperty("/printError",true);
+						messages.showODataErrorText(oError);
+					}
 				});
-				return promise;
 			},
 
-			calltempleate: function (oUrl, oRequest) {
+			calltempleate: function () {
 				// var response = "";
 				var that = this;
-				var promise = new Promise(function (resolve, reject) {
-					var aData = $.ajax({
-						url: oUrl,
-						type: "GET",
-						data: oRequest,
-						dataType: "json",
-						contentType: "application/json;charset=\"utf-8\"",
-						Accept: "application/json",
+				var aData = $.ajax({
+					url: "/ads.restapi/v1/forms/ZCP_Pick_List/templates",
+					type: "GET",
+					data: "",
+					dataType: "json",
+					contentType: "application/json;charset=\"utf-8\"",
+					Accept: "application/json",
 
-						success: function (data, textStatus, jqXHR) {
-							var template = data[0].xdpTemplate;
-							resolve(template);
-						},
-						error: function (xhr, status) {
-							reject(xhr);
-						}
-					});
+					success: function (data, textStatus, jqXHR) {
+						var template = data[0].xdpTemplate;
+						that._JSONModel.setProperty("/printTemplate", template);
+						that.byId("btnPrint").setProperty("enabled",true);
+					},
+					error: function (xhr, status) {
+						sap.m.MessageBox.error(that._ResourceBundle.getText("errMsg4"), {
+							title: that._ResourceBundle.getText("errBox")
+						});
+					}
 				});
-				return promise;
 			},
 			postpdf: function (oUrl, oRequest) {
 				var response = "";
@@ -505,6 +487,29 @@ sap.ui.define(
 					});
 				});
 				return promise;
+			},
+			pdfMerge: function(b64Set){
+				var that = this;
+				var aData = $.ajax({
+					url: "/pdfMerge",
+					type: "POST",
+					data: JSON.stringify( b64Set ),
+					dataType: "json",
+					contentType: "application/json;charset=\"utf-8\"",
+					Accept: "application/json",
+	
+					success: function (data, textStatus, jqXHR) {
+						var result = data.base64PDF;
+						that.byId("table").clearSelection();
+						that.pdfPreview(result);	
+					},
+					error: function (xhr, status) {
+						that.setBusy(false);
+						sap.m.MessageBox.error(that._ResourceBundle.getText("errMsg5"), {
+							title: that._ResourceBundle.getText("errBox")
+						});
+					}
+				});
 			},
 			pdfPreview: function (pdfBase64) {
 				var decodedPdfContent = atob(pdfBase64);
